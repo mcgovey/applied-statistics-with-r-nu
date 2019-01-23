@@ -103,7 +103,8 @@ q1comboVec
 (1)(c) Extract the first and last elements of the vector you have created in (1)(b) to form another vector of the extracted elements. Form a third vector from the elements not extracted. Output these vectors.
 
 ```{r test1c}
-
+q1FirstLastVec <- c(q1comboVec[0],q1comboVec[length(q1comboVec)])
+q1FirstLastVec
 
 ```
 
@@ -121,7 +122,7 @@ q1comboVec
 (2)(a) Create a user-defined function - via *function()* - that implements the trigonometric function above, accepts numeric values, "x," calculates and returns values "y."
 
 ```{r test2a}
-
+# function will be posted in practice? sample function unclear where you will post
 
 ```
 
@@ -130,13 +131,15 @@ q1comboVec
 Finding the two desired values can be accomplished in as few as two lines of code.  Do not use packages or programs you may find on the internet or elsewhere. Do not output the other elements of the vectors x and y. Relevant coding methods are given in the *Quick Start Guide for R*.
 
 ```{r test2b}
-
+x <- seq(from = -2, to = 2, by = .001)
+y <- 0
 
 ```
 
 (2)(c) Plot y versus x in color, with x on the horizontal axis. Show the location of the maximum value of y determined in 2(b).  Show the values of x and y corresponding to the maximum value of y in the display. Add a title and other features such as text annotations. Text annotations may be added via *text()* for base R plots and *geom_text()* or *geom_label()* for ggplots.
 
 ```{r test2c}
+
 
 
 ```
@@ -146,8 +149,8 @@ Finding the two desired values can be accomplished in as few as two lines of cod
 ##### (3) (4 points) This problem requires finding the point of intersection of two functions.  Using the function y = cos(x/2)\*sin(x/2), find where the curved line y = -(x/2)^3 intersects it within the range of values used in part (2) (i.e. 4001 equally-spaced values from -2 to 2).  Plot both functions on the same display, and show the point of intersection.  Present the coordinates of this point as text in the display.    
 
 ```{r test3}
-
-
+#q3fn1 <- cos(x/2)*sin(x/2)
+#q3fn2 <- -(x/2)^3
 ```
 
 -----
@@ -160,7 +163,17 @@ Finding the two desired values can be accomplished in as few as two lines of cod
 
 data(trees)
 
+# structure of trees data set
+str(trees)
 
+# apply() to return median values for three variables
+medianTrees <- apply(trees, 2, median)
+medianTrees
+
+# row number and three measurements of any trees with girth equal to median
+
+
+# make sure you know what girth is - diameter
 ```
 
 (4)(b) Girth is defined as the diameter of a tree taken at 4 feet 6 inches from the ground. Convert each diameter to a radius, r. Calculate the cross-sectional area of each tree using pi times the squared radius. Present a stem-and-leaf plot of the radii, and a histogram of the radii in color. Plot Area (y-axis) versus Radius (x-axis)  in color showing the individual data points.  Label appropriately.
@@ -174,13 +187,14 @@ data(trees)
 
 ```{r test3c}
 
+# Notched, horizontal, colored box plot
 
 ```
 
 (4)(d) Demonstrate that the outlier revealed in the boxplot of Volume is not an extreme outlier.  It is possible to do this with one line of code using *boxplot.stats()* or 'manual' calculation and logicals. Identify the tree with the largest area and output on one line its row number and three measurements.
 
 ```{r test3d}
-
+#boxplot.stats
 
 ```
 
@@ -195,7 +209,7 @@ Generate a new object using *cbind(x, y)*. Do not output this object; instead, a
 For information about *rexp()*, use *help(rexp)* or *?rexp()*.  **Do not output x or y.**
 
 ```{r test5a}
-
+# hint will be posted for this
 
 ```
 
@@ -209,6 +223,6 @@ For information about *rexp()*, use *help(rexp)* or *?rexp()*.  **Do not output 
 (5)(c) QQ plots are useful for detecting the presence of heavy-tailed distributions. Present side-by-side QQ plots, one for each sample, using *qqnorm()* and *qqline()*.  Add color and titles. In base R plots, "cex" can be used to control the size of the plotted data points and text. Lastly, determine if there are any extreme outliers in either sample.
 
 ```{r test5c}
-
+#suggestion to use qq plots in sample
 
 ```

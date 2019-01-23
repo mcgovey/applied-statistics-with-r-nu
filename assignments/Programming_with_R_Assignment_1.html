@@ -251,31 +251,59 @@ q1</code></pre>
 <pre class="r"><code>L &lt;- length(q1)
 L</code></pre>
 <pre><code>## [1] 16</code></pre>
-<pre class="r"><code>q1 + c(L:1)</code></pre>
+<pre class="r"><code>q1comboVec &lt;- q1 + c(L:1)
+q1comboVec</code></pre>
 <pre><code>##  [1] -7.0 -8.0 -9.0  7.9  6.9  5.9 10.0 10.0 10.0  9.0  8.0  7.0  7.0  7.0
 ## [15]  6.0 14.0</code></pre>
 <p>(1)(c) Extract the first and last elements of the vector you have created in (1)(b) to form another vector of the extracted elements. Form a third vector from the elements not extracted. Output these vectors.</p>
+<pre class="r"><code>q1FirstLastVec &lt;- c(q1comboVec[0],q1comboVec[length(q1comboVec)])
+q1FirstLastVec</code></pre>
+<pre><code>## [1] 14</code></pre>
 <p>(1)(d) Use the vectors from (c) to reconstruct the vector in (b). Output this vector. Sum the elements and round to two decimal places.</p>
 <hr />
 </div>
 <div id="points-the-expression-y-sinx2-cosx2-is-a-trigonometric-function." class="section level5">
 <h5>(2) (5 points) The expression y = sin(x/2) + cos(x/2) is a trigonometric function.</h5>
 <p>(2)(a) Create a user-defined function - via <em>function()</em> - that implements the trigonometric function above, accepts numeric values, “x,” calculates and returns values “y.”</p>
+<pre class="r"><code># function will be posted in practice? sample function unclear where you will post</code></pre>
 <p>(2)(b) Create a vector, x, of 4001 equally-spaced values from -2 to 2, inclusive. Compute values for y using the vector x and your function from (2)(a). <strong>Do not output x or y.</strong> Find the value in the vector x that corresponds to the maximum value in the vector y. Restrict attention to only the values of x and y you have computed; i.e. do not interpolate. Round to 3 decimal places and output both the maximum y and corresponding x value.</p>
 <p>Finding the two desired values can be accomplished in as few as two lines of code. Do not use packages or programs you may find on the internet or elsewhere. Do not output the other elements of the vectors x and y. Relevant coding methods are given in the <em>Quick Start Guide for R</em>.</p>
+<pre class="r"><code>x &lt;- seq(from = -2, to = 2, by = .001)
+y &lt;- 0</code></pre>
 <p>(2)(c) Plot y versus x in color, with x on the horizontal axis. Show the location of the maximum value of y determined in 2(b). Show the values of x and y corresponding to the maximum value of y in the display. Add a title and other features such as text annotations. Text annotations may be added via <em>text()</em> for base R plots and <em>geom_text()</em> or <em>geom_label()</em> for ggplots.</p>
 <hr />
 </div>
 <div id="points-this-problem-requires-finding-the-point-of-intersection-of-two-functions.-using-the-function-y-cosx2sinx2-find-where-the-curved-line-y--x23-intersects-it-within-the-range-of-values-used-in-part-2-i.e.4001-equally-spaced-values-from--2-to-2.-plot-both-functions-on-the-same-display-and-show-the-point-of-intersection.-present-the-coordinates-of-this-point-as-text-in-the-display." class="section level5">
 <h5>(3) (4 points) This problem requires finding the point of intersection of two functions. Using the function y = cos(x/2)*sin(x/2), find where the curved line y = -(x/2)^3 intersects it within the range of values used in part (2) (i.e. 4001 equally-spaced values from -2 to 2). Plot both functions on the same display, and show the point of intersection. Present the coordinates of this point as text in the display.</h5>
+<pre class="r"><code>#q3fn1 &lt;- cos(x/2)*sin(x/2)
+#q3fn2 &lt;- -(x/2)^3</code></pre>
 <hr />
 </div>
 <div id="points-use-the-trees-dataset-for-the-following-items.-this-dataset-has-three-variables-girth-height-volume-on-31-felled-black-cherry-trees." class="section level5">
 <h5>(4) (6 points) Use the “trees” dataset for the following items. This dataset has three variables (Girth, Height, Volume) on 31 felled black cherry trees.</h5>
 <p>(4)(a) Use <em>data(trees)</em> to load the dataset. Check and output the structure with <em>str()</em>. Use <em>apply()</em> to return the median values for the three variables. Output these values. Using R and logicals, output the row number and the three measurements - Girth, Height and Volume - of any trees with Girth equal to median Girth. It is possible to accomplish this last request with one line of code.</p>
-<pre class="r"><code>data(trees)</code></pre>
+<pre class="r"><code>data(trees)
+
+# structure of trees data set
+str(trees)</code></pre>
+<pre><code>## 'data.frame':    31 obs. of  3 variables:
+##  $ Girth : num  8.3 8.6 8.8 10.5 10.7 10.8 11 11 11.1 11.2 ...
+##  $ Height: num  70 65 63 72 81 83 66 75 80 75 ...
+##  $ Volume: num  10.3 10.3 10.2 16.4 18.8 19.7 15.6 18.2 22.6 19.9 ...</code></pre>
+<pre class="r"><code># apply() to return median values for three variables
+medianTrees &lt;- apply(trees, 2, median)
+medianTrees</code></pre>
+<pre><code>##  Girth Height Volume 
+##   12.9   76.0   24.2</code></pre>
+<pre class="r"><code># row number and three measurements of any trees with girth equal to median
+
+
+# make sure you know what girth is - diameter</code></pre>
 <p>(4)(b) Girth is defined as the diameter of a tree taken at 4 feet 6 inches from the ground. Convert each diameter to a radius, r. Calculate the cross-sectional area of each tree using pi times the squared radius. Present a stem-and-leaf plot of the radii, and a histogram of the radii in color. Plot Area (y-axis) versus Radius (x-axis) in color showing the individual data points. Label appropriately.</p>
 <p>(4)(c) Present a horizontal, notched, colored boxplot of the areas calculated in (b). Title and label the axis.</p>
+<pre class="r"><code># Notched box plot
+#ggplot(ToothGrowth, aes(x=dose, y=len)) + 
+#  geom_boxplot(notch=TRUE)</code></pre>
 <p>(4)(d) Demonstrate that the outlier revealed in the boxplot of Volume is not an extreme outlier. It is possible to do this with one line of code using <em>boxplot.stats()</em> or ‘manual’ calculation and logicals. Identify the tree with the largest area and output on one line its row number and three measurements.</p>
 <hr />
 </div>
@@ -284,6 +312,7 @@ L</code></pre>
 <p>5(a) Use <em>set.seed(124)</em> and <em>rexp()</em> with n = 100, rate = 5.5 to generate a random sample designated as y. Generate a second random sample designated as x with <em>set.seed(127)</em> and <em>rnorm()</em> using n = 100, mean = 0 and sd = 0.15.</p>
 <p>Generate a new object using <em>cbind(x, y)</em>. Do not output this object; instead, assign it to a new name. Pass this object to <em>apply()</em> and compute the inter-quartile range (IQR) for each column: x and y. Use the function <em>IQR()</em> for this purpose. Round the results to four decimal places and present (this exercise shows the similarity of the IQR values.).</p>
 <p>For information about <em>rexp()</em>, use <em>help(rexp)</em> or <em>?rexp()</em>. <strong>Do not output x or y.</strong></p>
+<pre class="r"><code># hint will be posted for this</code></pre>
 <p>(5)(b) This item will illustrate the difference between a right-skewed distribution and a symmetric one. For base R plots, use <em>par(mfrow = c(2, 2))</em> to generate a display with four diagrams; <em>grid.arrange()</em> for ggplots. On the first row, for the normal results, present a histogram and a horizontal boxplot for x in color. For the exponential results, present a histogram and a horizontal boxplot for y in color.</p>
 <p>(5)(c) QQ plots are useful for detecting the presence of heavy-tailed distributions. Present side-by-side QQ plots, one for each sample, using <em>qqnorm()</em> and <em>qqline()</em>. Add color and titles. In base R plots, “cex” can be used to control the size of the plotted data points and text. Lastly, determine if there are any extreme outliers in either sample.</p>
 </div>
