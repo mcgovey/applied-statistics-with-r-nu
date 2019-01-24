@@ -10,63 +10,6 @@ knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
 
 ```
 
-### Instructions
-
-R markdown is a plain-text file format for integrating text and R code, and creating transparent, reproducible and interactive reports. An R markdown file (.Rmd) contains metadata, markdown and R code "chunks", and can be "knit" into numerous output types. Answer the test questions by adding R code to the fenced code areas below each item. Once completed, you will "knit" and submit the resulting .html file, as well the .Rmd file. The .html will include your R code *and* the output.
-
-**Before proceeding, look to the top of the .Rmd for the (YAML) metadata block, where the *title* and *output* are given. Please change *title* from 'Programming with R Assignment #1' to your name, with the format 'lastName_firstName.'**
-
-If you encounter issues with knitting the .html, please send an email via Canvas to your TA.
-
-Each code chunk is delineated by six (6) backticks; three (3) at the start and three (3) at the end. After the opening ticks, arguments are passed to the code chunk and in curly brackets. **Please do not add or remove backticks, or modify the arguments or values inside the curly brackets**. An example code chunk is included here: 
-
-```{r exampleCodeChunk, eval = FALSE}
-# Comments are included in each code chunk, simply as prompts
-
-...R code placed here
-
-...R code placed here
-
-```
-
-You need only enter text inside the code chunks for each test item.
-
-Depending on the problem, grading will be based on: 1) the correct result, 2) coding efficiency and 3) graphical presentation features (labeling, colors, size, legibility, etc).  I will be looking for well-rendered displays.  In the "knit" document, only those results specified in the problem statements should be displayed. For example, do not output - i.e. send to the Console - the contents of vectors or data frames unless requested by the problem.  You should be able to code for each solution in fewer than ten lines; though code for your visualizations may exceed this.
-
-**Submit both the .Rmd and .html files for grading**
-
------
-
-**Example Problem with Solution:**
-Use *rbinom()* to generate two random samples of size 10,000 from the binomial distribution. For the first sample, use p = 0.45 and n = 10. For the second sample, use p = 0.55 and n = 10.
-
-(a) Convert the sample frequencies to sample proportions and compute the mean number of successes for each sample. Present these statistics.
-
-```{r testExampleA}
-set.seed(123)
-sample.one <- table(rbinom(10000, 10, 0.45)) / 10000
-sample.two <- table(rbinom(10000, 10, 0.55)) / 10000
-
-successes <- seq(0, 10)
-
-sum(sample.one * successes) # [1] 4.4827
-sum(sample.two * successes) # [1] 5.523
-```
-
-(b) Present the proportions in a vertical, side-by-side barplot color coding the two samples.
-
-```{r testExampleB}
-counts <- rbind(sample.one, sample.two)
-
-barplot(counts, main = "Comparison of Binomial Sample Proportions", 
-  ylab = "Frequency", ylim = c(0,0.3),xlab = "Number of Successes",
-  beside = TRUE, col = c("darkblue","red"),legend = rownames(counts),
-  names.arg = c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
-```
-
-####  Please delete the Instructions and Examples shown above prior to submitting your .Rmd and .html files.
-
------
 
 ### Test Items
 
@@ -103,15 +46,21 @@ q1comboVec
 (1)(c) Extract the first and last elements of the vector you have created in (1)(b) to form another vector of the extracted elements. Form a third vector from the elements not extracted. Output these vectors.
 
 ```{r test1c}
-q1FirstLastVec <- c(q1comboVec[0],q1comboVec[length(q1comboVec)])
+# may want to ask question on this?
+q1FirstLastVec <- q1comboVec[c(1,length(q1comboVec))]
 q1FirstLastVec
 
+q1NotExtracted <- q1comboVec[-c(1,length(q1comboVec))]
+q1NotExtracted
 ```
 
 (1)(d) Use the vectors from (c) to reconstruct the vector in (b). Output this vector. Sum the elements and round to two decimal places.
 
 ```{r test1d}
+q1Reconstructed <- c(q1FirstLastVec[1],q1NotExtracted,q1FirstLastVec[2])
+q1Reconstructed
 
+round(sum(q1Reconstructed), digits = 2)
 
 ```
 
@@ -122,7 +71,10 @@ q1FirstLastVec
 (2)(a) Create a user-defined function - via *function()* - that implements the trigonometric function above, accepts numeric values, "x," calculates and returns values "y."
 
 ```{r test2a}
-# function will be posted in practice? sample function unclear where you will post
+q2udf <- function(x){
+  y <- sin(x/2) + cos(x/2)
+  return(y)
+}
 
 ```
 
@@ -132,15 +84,33 @@ Finding the two desired values can be accomplished in as few as two lines of cod
 
 ```{r test2b}
 x <- seq(from = -2, to = 2, by = .001)
-y <- 0
+y <- q2udf(x)
+
+# find the position of the maximum y value
+maxX <- x[which.max(y)]
+# output the x value corresponding to the max y value
+round(maxX, digits = 3)
+
+# output the max y value
+maxY <- max(y)
+round(maxY, digits = 3)
 
 ```
 
 (2)(c) Plot y versus x in color, with x on the horizontal axis. Show the location of the maximum value of y determined in 2(b).  Show the values of x and y corresponding to the maximum value of y in the display. Add a title and other features such as text annotations. Text annotations may be added via *text()* for base R plots and *geom_text()* or *geom_label()* for ggplots.
 
 ```{r test2c}
+c <- rep(0, length(x))
+c[which.max(y)] <- 255
+c
+# plot x vs y from above variables
+plot(x, y, type="n", main = "Question 2c -2 to 2 sin(x/2) + cos(x/2)")
+lines(x, q3y)
+lines(x, q3y2)
+par(new=TRUE)
+plot(x[q3intersectPos], q3y[q3intersectPos], col="blue")
 
-
+# need to add call out for max value
 
 ```
 
@@ -149,8 +119,25 @@ y <- 0
 ##### (3) (4 points) This problem requires finding the point of intersection of two functions.  Using the function y = cos(x/2)\*sin(x/2), find where the curved line y = -(x/2)^3 intersects it within the range of values used in part (2) (i.e. 4001 equally-spaced values from -2 to 2).  Plot both functions on the same display, and show the point of intersection.  Present the coordinates of this point as text in the display.    
 
 ```{r test3}
-#q3fn1 <- cos(x/2)*sin(x/2)
-#q3fn2 <- -(x/2)^3
+q3fn1 <- function(x){
+  return(cos(x/2)*sin(x/2))
+}
+q3fn2 <- function(x){
+  return(-(x/2)^3)
+}
+q3y <- q3fn1(x)
+q3y2 <- q3fn2(x)
+
+# find the insection of the two y spaces
+q3intersect <- intersect(q3y, q3y2)
+q3intersectPos <- match(q3intersect, q3y)
+
+plot(x, q3y, type="n", main = "Question 3 -2 to 2 cos(x/2)*sin(x/2) vs. -(x/2)^3")
+lines(x, q3y)
+lines(x, q3y2)
+par(new=TRUE)
+plot(x[q3intersectPos], q3y[q3intersectPos], col="blue")
+
 ```
 
 -----
