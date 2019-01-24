@@ -100,17 +100,15 @@ round(maxY, digits = 3)
 (2)(c) Plot y versus x in color, with x on the horizontal axis. Show the location of the maximum value of y determined in 2(b).  Show the values of x and y corresponding to the maximum value of y in the display. Add a title and other features such as text annotations. Text annotations may be added via *text()* for base R plots and *geom_text()* or *geom_label()* for ggplots.
 
 ```{r test2c}
-c <- rep(0, length(x))
-c[which.max(y)] <- 255
-c
-# plot x vs y from above variables
-plot(x, y, type="n", main = "Question 2c -2 to 2 sin(x/2) + cos(x/2)")
-lines(x, q3y)
-lines(x, q3y2)
-par(new=TRUE)
-plot(x[q3intersectPos], q3y[q3intersectPos], col="blue")
+c <- rep(1, length(x))
+c[which.max(y)] <- 2
 
-# need to add call out for max value
+# plot x vs y from above variables
+plot(x, q2udf(x), pch = 16, col=c("blue","red")[c], cex = c(.4, 1)[c],
+     main = "Question 2c -2 to 2 sin(x/2) + cos(x/2)",
+     xlab="-2 to 2 X", ylab="sin(x/2) + cos(x/2)")
+text(maxX, maxY-.1, paste("max value ",round(maxX, digits = 3), ",", round(maxY, digits = 3), sep = ""),
+     cex = .8)
 
 ```
 
@@ -132,11 +130,22 @@ q3y2 <- q3fn2(x)
 q3intersect <- intersect(q3y, q3y2)
 q3intersectPos <- match(q3intersect, q3y)
 
-plot(x, q3y, type="n", main = "Question 3 -2 to 2 cos(x/2)*sin(x/2) vs. -(x/2)^3")
-lines(x, q3y)
-lines(x, q3y2)
+# plot the first equation x value but do not output
+plot(x, q3y, type = "n",
+     main = "Question 3 -2 to 2 cos(x/2)*sin(x/2) vs. -(x/2)^3",
+     xlab = "-2 to 2 X", ylab = "cos(x/2)*sin(x/2) vs -(x/2)^3")
+# plot first line
+lines(x, q3y, col = rgb(67, 162, 202, max = 255))
+# plot equation from second line
+lines(x, q3y2, col = rgb(168, 221, 181, max = 255))
+# create a new axis to plot intersection value (plotting on first axis caused window change)
 par(new=TRUE)
-plot(x[q3intersectPos], q3y[q3intersectPos], col="blue")
+# plot intersection
+plot(x[q3intersectPos], q3y[q3intersectPos], col = "red", axes=FALSE, ann=FALSE)
+# add text annotation for intersection point
+text(x[q3intersectPos], q3y[q3intersectPos]-.1, 
+     paste("intersection ",round(x[q3intersectPos], digits = 3), ",", round(q3y[q3intersectPos], digits = 3), sep = ""),
+     cex = 1)
 
 ```
 
