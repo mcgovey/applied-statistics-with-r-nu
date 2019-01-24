@@ -104,7 +104,7 @@ c <- rep(1, length(x))
 c[which.max(y)] <- 2
 
 # plot x vs y from above variables
-plot(x, q2udf(x), pch = 16, col=c("blue","red")[c], cex = c(.4, 1)[c],
+plot(x, q2udf(x), pch = 16, col=c(rgb(103, 169, 207, max = 255), rgb(239, 138, 98, max = 255))[c], cex = c(.4, 1)[c],
      main = "Question 2c -2 to 2 sin(x/2) + cos(x/2)",
      xlab="-2 to 2 X", ylab="sin(x/2) + cos(x/2)")
 text(maxX, maxY-.1, paste("max value ",round(maxX, digits = 3), ",", round(maxY, digits = 3), sep = ""),
@@ -162,20 +162,44 @@ data(trees)
 # structure of trees data set
 str(trees)
 
-# apply() to return median values for three variables
+# find and out median of three variables in trees dataset
 medianTrees <- apply(trees, 2, median)
 medianTrees
 
-# row number and three measurements of any trees with girth equal to median
+# output row number and three variables for records matching median girth
+trees[trees$Girth == medianTrees["Girth"], ] 
 
-
-# make sure you know what girth is - diameter
 ```
 
 (4)(b) Girth is defined as the diameter of a tree taken at 4 feet 6 inches from the ground. Convert each diameter to a radius, r. Calculate the cross-sectional area of each tree using pi times the squared radius. Present a stem-and-leaf plot of the radii, and a histogram of the radii in color. Plot Area (y-axis) versus Radius (x-axis)  in color showing the individual data points.  Label appropriately.
 
 ```{r test3b}
+# create a function to calculate the radius
+diameterToRadius <- function(x){
+  return(x/2)
+}
 
+# create a new field that captures the radius
+trees$Radius <- apply(trees[1], 2, diameterToRadius)
+
+# stem and leaf plot of radius
+stem(trees$Radius)
+
+# function to compute the area of each tree
+treeArea <- function(r){
+  return(pi*r^2)
+}
+# apply area function and create new field in trees data set
+trees$Area <- apply(trees[4], 2, treeArea)
+
+# 
+hist(trees$Radius, col = rgb(44, 127, 184, maxColorValue = 255),
+     main = "Histogram of Tree Radius (inches)",
+     xlab = "Tree Radius")
+
+plot(trees$Area, trees$Radius, pch = 16, col = rgb(44, 127, 184, maxColorValue = 255),
+     main = "Tree Area vs. Radius",
+     xlab = "Tree Area (in^2)", ylab = "Tree Radius (in)")
 
 ```
 
@@ -184,13 +208,21 @@ medianTrees
 ```{r test3c}
 
 # Notched, horizontal, colored box plot
+boxplot(trees$Area, notch = T, horizontal = T, col = rgb(44, 127, 184, maxColorValue = 255),
+        main = "Boxplot of Tree Areas",
+        xlab = "Tree Areas (inches squared)")
 
 ```
 
 (4)(d) Demonstrate that the outlier revealed in the boxplot of Volume is not an extreme outlier.  It is possible to do this with one line of code using *boxplot.stats()* or 'manual' calculation and logicals. Identify the tree with the largest area and output on one line its row number and three measurements.
 
 ```{r test3d}
-#boxplot.stats
+# use boxplot stats to show the values of the whiskers and any outliers
+boxplot.stats(trees$Area)
+
+# max value is listed as an outlier, output it with original three variables
+treeMaxArea <- trees[trees$Area == max(trees$Area), ]
+treeMaxArea[1:3]
 
 ```
 
