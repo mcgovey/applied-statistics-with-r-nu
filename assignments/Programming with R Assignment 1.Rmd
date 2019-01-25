@@ -24,21 +24,24 @@ Read each question carefully and address each element.  Do not output contents o
 * The arithmetic sum of 7/42, 3 and 35/42
 
 ```{r test1a}
-q1 <- c(0:4, 13, rep(c(2, -5.1, -23),3), 7/42 + 3 + 35/42)
-
+# create vector and output
+q1 <- c(0:4, 13, rep(c(2, -5.1, -23),3), (7/42 + 3 + 35/42))
 q1
 ```
 
 (1)(b)  Sort the vector created in (1)(a) in ascending order.  Output this result. Determine the length of the resulting vector and assign to "L". Output L. Generate a descending sequence starting with L and ending with 1. Add this descending sequence arithmetically the sorted vector. This is vector addition, not vector combination. Output the contents. Do not round any values.
 
 ```{r test1b}
+# sort previous vector - default asc
 q1 <- sort(q1)
 q1
 
+# capture length of vector
 L <- length(q1)
 L
 
-q1comboVec <- q1 + c(L:1)
+# create descending vector then add vectors to original sorted vector
+q1comboVec <- c(L:1) + q1
 q1comboVec
 
 ```
@@ -46,10 +49,11 @@ q1comboVec
 (1)(c) Extract the first and last elements of the vector you have created in (1)(b) to form another vector of the extracted elements. Form a third vector from the elements not extracted. Output these vectors.
 
 ```{r test1c}
-# may want to ask question on this?
+# capture and output the first and the last elements of the vector
 q1FirstLastVec <- q1comboVec[c(1,length(q1comboVec))]
 q1FirstLastVec
 
+# capture and output everything but the first and last elements of the vector
 q1NotExtracted <- q1comboVec[-c(1,length(q1comboVec))]
 q1NotExtracted
 ```
@@ -57,6 +61,7 @@ q1NotExtracted
 (1)(d) Use the vectors from (c) to reconstruct the vector in (b). Output this vector. Sum the elements and round to two decimal places.
 
 ```{r test1d}
+# reconstruct original vector
 q1Reconstructed <- c(q1FirstLastVec[1],q1NotExtracted,q1FirstLastVec[2])
 q1Reconstructed
 
@@ -71,6 +76,7 @@ round(sum(q1Reconstructed), digits = 2)
 (2)(a) Create a user-defined function - via *function()* - that implements the trigonometric function above, accepts numeric values, "x," calculates and returns values "y."
 
 ```{r test2a}
+# create function that takes x and returns data processed through y equation
 q2udf <- function(x){
   y <- sin(x/2) + cos(x/2)
   return(y)
@@ -83,7 +89,9 @@ q2udf <- function(x){
 Finding the two desired values can be accomplished in as few as two lines of code.  Do not use packages or programs you may find on the internet or elsewhere. Do not output the other elements of the vectors x and y. Relevant coding methods are given in the *Quick Start Guide for R*.
 
 ```{r test2b}
+# create 4001 data points between -2 and 2
 x <- seq(from = -2, to = 2, by = .001)
+# use above function to process X values created above
 y <- q2udf(x)
 
 # find the position of the maximum y value
@@ -100,6 +108,7 @@ round(maxY, digits = 3)
 (2)(c) Plot y versus x in color, with x on the horizontal axis. Show the location of the maximum value of y determined in 2(b).  Show the values of x and y corresponding to the maximum value of y in the display. Add a title and other features such as text annotations. Text annotations may be added via *text()* for base R plots and *geom_text()* or *geom_label()* for ggplots.
 
 ```{r test2c}
+# create a color map with 1s for everything but the max value (2)
 c <- rep(1, length(x))
 c[which.max(y)] <- 2
 
@@ -117,6 +126,7 @@ text(maxX, maxY-.1, paste("max value ",round(maxX, digits = 3), ",", round(maxY,
 ##### (3) (4 points) This problem requires finding the point of intersection of two functions.  Using the function y = cos(x/2)\*sin(x/2), find where the curved line y = -(x/2)^3 intersects it within the range of values used in part (2) (i.e. 4001 equally-spaced values from -2 to 2).  Plot both functions on the same display, and show the point of intersection.  Present the coordinates of this point as text in the display.    
 
 ```{r test3}
+# create two functions to process the functions that will intersect
 q3fn1 <- function(x){
   return(cos(x/2)*sin(x/2))
 }
@@ -144,7 +154,7 @@ par(new=TRUE)
 plot(x[q3intersectPos], q3y[q3intersectPos], col = "red", axes=FALSE, ann=FALSE)
 # add text annotation for intersection point
 text(x[q3intersectPos], q3y[q3intersectPos]-.1, 
-     paste("intersection ",round(x[q3intersectPos], digits = 3), ",", round(q3y[q3intersectPos], digits = 3), sep = ""),
+     paste(round(x[q3intersectPos], digits = 3), ",", round(q3y[q3intersectPos], digits = 3), sep = ""),
      cex = 1)
 
 ```
@@ -192,11 +202,12 @@ treeArea <- function(r){
 # apply area function and create new field in trees data set
 trees$Area <- apply(trees[4], 2, treeArea)
 
-# 
+# create histogram of tree radius
 hist(trees$Radius, col = rgb(44, 127, 184, maxColorValue = 255),
-     main = "Histogram of Tree Radius (inches)",
+     main = "Histogram of Tree Radii (inches)",
      xlab = "Tree Radius")
 
+# create scatterplot of tree area vs radius
 plot(trees$Area, trees$Radius, pch = 16, col = rgb(44, 127, 184, maxColorValue = 255),
      main = "Tree Area vs. Radius",
      xlab = "Tree Area (in^2)", ylab = "Tree Radius (in)")
@@ -207,7 +218,7 @@ plot(trees$Area, trees$Radius, pch = 16, col = rgb(44, 127, 184, maxColorValue =
 
 ```{r test3c}
 
-# Notched, horizontal, colored box plot
+# Notched, horizontal, colored box plot of tree area
 boxplot(trees$Area, notch = T, horizontal = T, col = rgb(44, 127, 184, maxColorValue = 255),
         main = "Boxplot of Tree Areas",
         xlab = "Tree Areas (inches squared)")
@@ -237,15 +248,18 @@ Generate a new object using *cbind(x, y)*. Do not output this object; instead, a
 For information about *rexp()*, use *help(rexp)* or *?rexp()*.  **Do not output x or y.**
 
 ```{r test5a}
-# hint will be posted for this
+# set seed then create y values
 set.seed(124)
 y <- rexp(100, rate = 5.5)
 
+# set seed then create x values
 set.seed(127)
 x <- rnorm(100, mean = 0, sd = 0.15)
 
+# join the two elements
 q5 <- cbind(x, y)
 
+# output IQR for X and Y values
 round(apply(q5, 2, IQR), digits = 4)
 
 ```
@@ -253,7 +267,7 @@ round(apply(q5, 2, IQR), digits = 4)
 (5)(b) This item will illustrate the difference between a right-skewed distribution and a symmetric one.  For base R plots, use *par(mfrow = c(2, 2))* to generate a display with four diagrams; *grid.arrange()* for ggplots. On the first row, for the normal results, present a histogram and a horizontal boxplot for x in color.  For the exponential results, present a histogram and a horizontal boxplot for y in color.
 
 ```{r test5b}
-
+# 2x2 mini charts of histograms and boxplots describing X and Y
 par(mfrow = c(2, 2))
 hist(x, col = rgb(44, 127, 184, maxColorValue = 255),
      main = "Histogram of normal distribution X")
@@ -269,14 +283,14 @@ boxplot(y, horizontal = T, col = rgb(127, 205, 187, maxColorValue = 255),
 (5)(c) QQ plots are useful for detecting the presence of heavy-tailed distributions. Present side-by-side QQ plots, one for each sample, using *qqnorm()* and *qqline()*.  Add color and titles. In base R plots, "cex" can be used to control the size of the plotted data points and text. Lastly, determine if there are any extreme outliers in either sample.
 
 ```{r test5c}
-#suggestion to use qq plots in sample
+# Create two charts on one line, each qqnorm
 par(mfrow = c(1, 2))
 qqnorm(x, col = rgb(44, 127, 184, maxColorValue = 255),
-       cex = 0.6,
+       cex = 0.6, pch = 16,
        main = "QQ Plot of normal distribution X")
 qqline(x)
 qqnorm(y, col = rgb(127, 205, 187, maxColorValue = 255),
-       cex = 0.6,
+       cex = 0.6, pch = 16,
        main = "QQ Plot of right-skewed Y")
 qqline(y)
 
