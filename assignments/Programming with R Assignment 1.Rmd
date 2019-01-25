@@ -238,6 +238,15 @@ For information about *rexp()*, use *help(rexp)* or *?rexp()*.  **Do not output 
 
 ```{r test5a}
 # hint will be posted for this
+set.seed(124)
+y <- rexp(100, rate = 5.5)
+
+set.seed(127)
+x <- rnorm(100, mean = 0, sd = 0.15)
+
+q5 <- cbind(x, y)
+
+round(apply(q5, 2, IQR), digits = 4)
 
 ```
 
@@ -245,6 +254,15 @@ For information about *rexp()*, use *help(rexp)* or *?rexp()*.  **Do not output 
 
 ```{r test5b}
 
+par(mfrow = c(2, 2))
+hist(x, col = rgb(44, 127, 184, maxColorValue = 255),
+     main = "Histogram of normal distribution X")
+boxplot(x, horizontal = T, col = rgb(44, 127, 184, maxColorValue = 255),
+     main = "Boxplot of normal distribution X")
+hist(y, col = rgb(127, 205, 187, maxColorValue = 255),
+     main = "Histogram of right-skewed Y")
+boxplot(y, horizontal = T, col = rgb(127, 205, 187, maxColorValue = 255),
+     main = "Boxplot of right-skewed Y")
 
 ```
 
@@ -252,5 +270,17 @@ For information about *rexp()*, use *help(rexp)* or *?rexp()*.  **Do not output 
 
 ```{r test5c}
 #suggestion to use qq plots in sample
+par(mfrow = c(1, 2))
+qqnorm(x, col = rgb(44, 127, 184, maxColorValue = 255),
+       cex = 0.6,
+       main = "QQ Plot of normal distribution X")
+qqline(x)
+qqnorm(y, col = rgb(127, 205, 187, maxColorValue = 255),
+       cex = 0.6,
+       main = "QQ Plot of right-skewed Y")
+qqline(y)
 
+# check for outliers in both x and y charts
+boxplot.stats(x) # one outlier
+boxplot.stats(y) # three outliers
 ```
