@@ -118,7 +118,8 @@ plot(x, q2udf(x), pch = 16, col=c(rgb(103, 169, 207, max = 255), rgb(239, 138, 9
      xlab="-2 to 2 X", ylab="sin(x/2) + cos(x/2)")
 text(maxX, maxY-.1, paste("max value ",round(maxX, digits = 3), ",", round(maxY, digits = 3), sep = ""),
      cex = .8)
-
+legend(x="topleft", legend=c("y = sin(x/2) + cos(x/2)","Max value of y"),
+       col=c(rgb(103, 169, 207, max = 255), rgb(239, 138, 98, max = 255)), lwd=5, lty=c(1, NA), pch=c(NA,16))
 ```
 
 -----
@@ -156,6 +157,9 @@ plot(x[q3intersectPos], q3y[q3intersectPos], col = "red", axes=FALSE, ann=FALSE)
 text(x[q3intersectPos], q3y[q3intersectPos]-.1, 
      paste(round(x[q3intersectPos], digits = 3), ",", round(q3y[q3intersectPos], digits = 3), sep = ""),
      cex = 1)
+legend(x="top", legend=c("y = cos(x/2)*sin(x/2)","-(x/2)^3","intersection"),
+       col=c(rgb(67, 162, 202, max = 255), rgb(168, 221, 181, max = 255), "red"), lwd=5, lty=c(1, 1, NA),
+       pch=c(NA, NA, 16), cex = 0.8)
 
 ```
 
@@ -229,9 +233,13 @@ boxplot(trees$Area, notch = T, horizontal = T, col = rgb(44, 127, 184, maxColorV
 
 ```{r test3d}
 # use boxplot stats to show the values of the whiskers and any outliers
-boxplot.stats(trees$Area)
 
-# max value is listed as an outlier, output it with original three variables
+q4VolumeOutliers <- boxplot.stats(x = trees$Volume)[["out"]]
+
+q4Extreme <- q4VolumeOutliers > (quantile(trees$Volume, .75) + 3.0*IQR(trees$Volume))
+q4VolumeOutliers[q4Extreme] # output nothing to show that above calc does not produce an extreme outlier
+
+# output max area with original three variables
 treeMaxArea <- trees[trees$Area == max(trees$Area), ]
 treeMaxArea[1:3]
 
@@ -260,7 +268,7 @@ x <- rnorm(100, mean = 0, sd = 0.15)
 q5 <- cbind(x, y)
 
 # output IQR for X and Y values
-round(apply(q5, 2, IQR), digits = 4)
+q5IQR <- round(apply(q5, 2, IQR), digits = 4)
 
 ```
 
@@ -289,12 +297,24 @@ qqnorm(x, col = rgb(44, 127, 184, maxColorValue = 255),
        cex = 0.6, pch = 16,
        main = "QQ Plot of normal distribution X")
 qqline(x)
+legend(x="topleft", legend=c("rexp","quantiles"),
+       col=c(rgb(44, 127, 184, maxColorValue = 255), "black"), lwd=5, lty=c(NA, 1),
+       pch=c(16, NA), cex = 0.8)
+
 qqnorm(y, col = rgb(127, 205, 187, maxColorValue = 255),
        cex = 0.6, pch = 16,
        main = "QQ Plot of right-skewed Y")
 qqline(y)
+legend(x="topleft", legend=c("rnorm","quantiles"),
+       col=c(rgb(127, 205, 187, maxColorValue = 255), "black"), lwd=5, lty=c(NA, 1),
+       pch=c(16, NA), cex = 0.8)
 
-# check for outliers in both x and y charts
-boxplot.stats(x) # one outlier
-boxplot.stats(y) # three outliers
+# check for extreme outliers in both x and y charts
+q5XOutliers <- boxplot.stats(x)[["out"]]
+q5YOutliers <- boxplot.stats(y)[["out"]]
+
+q5Xextreme <- q5XOutliers > (quantile(x, .75) + 3.0*q5IQR[1])
+q5XOutliers[q5Xextreme] # output nothing because no extreme outliers
+q5Yextreme <- q5YOutliers > (quantile(y, .75) + 3.0*q5IQR[2])
+q5YOutliers[q5Yextreme] # output the single extreme outlier
 ```
