@@ -39,8 +39,9 @@ library(ggplot2)
 library(gridExtra)
 library(knitr)
 
-# load color library
-library("colorspace")
+# load color libraries
+library(colorspace)
+library(RColorBrewer)
 
 # b) Use read.csv() to read the abalones.csv into R, assigning the data frame to "mydata."
 
@@ -84,6 +85,13 @@ SexByClass <- table(mydata$SEX, mydata$CLASS)
 
 addmargins(SexByClass)
 
+barplot(SexByClass, beside=T, col=brewer.pal(3, "Blues"), border="black",
+     main = "Count of Abelones by Class, grouped by Sex",
+     xlab="Class grouped by Sex", ylab="Count")
+
+legend(x="topright", legend=c("Female","Infant","Male"),
+       col=brewer.pal(3, "Blues"), pch=15)
+
 ```
 
 **Question (2 points):  Discuss the sex distribution of abalones.  What stands out about the distribution of abalones by CLASS?**
@@ -112,12 +120,12 @@ plot(work[, 2:6])
 (2)(a) (1 point) Use "mydata" to plot WHOLE versus VOLUME. Color code data points by CLASS.
 
 ```{r Part_2a}
-plot(mydata$WHOLE, mydata$VOLUME, pch = 16, col=rainbow_hcl(5)[mydata$CLASS],
-     main = "Comparison of whole abelone??? to abelone volume",
-     xlab="Whole", ylab="Volume")
+plot(mydata$WHOLE, mydata$VOLUME, pch = 16, col=brewer.pal(5, "YlGnBu")[mydata$CLASS],
+     main = "Comparison of Weight of Whole Abelone to Abelone Volume",
+     xlab="Whole Weight (grams)", ylab="Volume (cm^3)")
 
 legend(x="bottomright", legend=unique(mydata$CLASS),
-       col=rainbow_hcl(5), pch=16)
+       col=brewer.pal(5, "YlGnBu"), pch=16)
 ```
 
 
@@ -132,6 +140,7 @@ plot(mydata$WHOLE, mydata$SHUCK, pch = 16, col=rainbow_hcl(5)[mydata$CLASS],
      xlab="Whole Weight (grams)", ylab="Shucked Weight (grams)")
 # add color to this line
 abline(0, max(mydata$SHUCK/mydata$WHOLE))
+# add text describing meaning of line
 #text(maxX, maxY-.1, paste("max value ",round(maxX, digits = 3), ",", round(maxY, digits = 3), sep = ""),
 #     cex = .8)
 legend(x="bottomright", legend=unique(mydata$CLASS),
@@ -149,7 +158,26 @@ legend(x="bottomright", legend=unique(mydata$CLASS),
 
 ```{r Part_3a}
 
+# fix labels and add titles
 
+ggHist <- ggplot(data = mydata, aes(x = RATIO, fill=SEX)) +
+  geom_histogram(binwidth=.02) +
+  facet_grid(. ~ SEX) +
+  scale_fill_brewer(palette="Set2")
+
+ggBloxplot <- ggplot(data = mydata, aes(y = RATIO, color=SEX)) +
+  geom_boxplot(width=1) +
+  xlim(-1, 1) +
+  facet_grid(. ~ SEX) +
+  scale_color_brewer(palette="Set2")
+
+ggQQPlot <- ggplot(data = mydata, aes(sample = RATIO, color=SEX)) +
+  geom_qq() +
+  geom_qq_line() +
+  facet_grid(. ~ SEX) +
+  scale_color_brewer(palette="Set2")
+
+grid.arrange(ggHist, ggBloxplot, ggQQPlot)
 ```
 
 **Question (2 points): Compare the displays.  How do the distributions compare to normality? Take into account the criteria discussed in the sync sessions to evaluate non-normality.**
@@ -159,6 +187,38 @@ legend(x="bottomright", legend=unique(mydata$CLASS),
 (3)(b) (2 points) Use the boxplots to identify RATIO outliers (mild and extreme both) for each sex. Present the abalones with these outlying RATIO values along with their associated variables in "mydata" (Hint:  display the observations by passing a data frame to the kable() function).  
 
 ```{r Part_3b}
+# create a function to determine the mild outliers using a boxplot
+findOutliers <- function(sex){
+  return(boxplot.stats(x = mydata$RATIO[mydata$SEX == sex])[["out"]])
+}
+# create a function to determine extreme outliers using 3*IQR
+findExtremeOutliers <- function(outliers, sex){
+  return(outliers > (quantile(mydata$RATIO[mydata$SEX == sex], .75) + 3.0*IQR(mydata$RATIO[mydata$SEX == sex])))
+}
+
+# use outlier function to determine outliers for male, female, and infants
+ratioOutliers_m <- findOutliers("M")
+ratioOutliers_f <- findOutliers("F")
+ratioOutliers_i <- findOutliers("I")
+
+# get row positions of mild outliers
+ratioOutliers_positions <- match(c(ratioOutliers_m, ratioOutliers_f, ratioOutliers_i), mydata$RATIO)
+
+# output all mild outliers
+kable(mydata[ratioOutliers_positions, ], format = "html", caption = "Mild Ratio Outliers Determined by Sex")
+
+# use extreme outlier function to determine extreme outliers for male, female, and infants
+ratioOutliersExtreme_m <- findExtremeOutliers(ratioOutliers_m, "M")
+ratioOutliersExtreme_f <- findExtremeOutliers(ratioOutliers_f, "F")
+ratioOutliersExtreme_i <- findExtremeOutliers(ratioOutliers_i, "I")
+
+# create vector of all extreme outliers
+ratioOutliersExtreme <- c(ratioOutliers_m[ratioOutliersExtreme_m],ratioOutliers_f[ratioOutliersExtreme_f],ratioOutliers_i[ratioOutliersExtreme_i])
+# find row positions of extreme outliers
+ratioOutliersExtreme_positions <- match(ratioOutliersExtreme, mydata$RATIO)
+
+# output all extreme outliers
+kable(mydata[ratioOutliersExtreme_positions, ], format = "html", caption = "Extreme Ratio Outliers Determined by Sex")
 
 
 ```
@@ -173,13 +233,26 @@ legend(x="bottomright", legend=unique(mydata$CLASS),
 
 
 ```{r Part_4a}
+ggVolumeBoxplt <- ggplot(data = mydata, aes(y = VOLUME, x = CLASS, color=CLASS)) +
+  geom_boxplot() +
+  scale_color_brewer(palette="Dark2")
+ggWholeBoxplt <- ggplot(data = mydata, aes(y = WHOLE, x = CLASS, color=CLASS)) +
+  geom_boxplot() +
+  scale_color_brewer(palette="Dark2")
+ggVolumeScatter <- ggplot(data = mydata, aes(y = VOLUME, x = RINGS, color=CLASS)) +
+  geom_point() +
+  scale_color_brewer(palette="Dark2")
+ggWholeScatter <- ggplot(data = mydata, aes(y = WHOLE, x = RINGS, color=CLASS)) +
+  geom_point() +
+  scale_color_brewer(palette="Dark2")
 
+grid.arrange(ggVolumeBoxplt, ggWholeBoxplt, ggVolumeScatter, ggWholeScatter, ncol=2)
 
 ```
 
 **Question (5 points) How well do you think these variables would perform as predictors of age?  Explain.**
 
-***Answer: (Enter your answer here.)***
+***Answer: There is a general positive trend between the number of rings and both the Whole and Volume variables. However, both variables have a wide range of variability for the A3, A4, and A5 classes. Therefore, I believe that both volume and whole would not perform well as predictors for age, unless the age range is limited to very young abelones.***
 
 -----
 
