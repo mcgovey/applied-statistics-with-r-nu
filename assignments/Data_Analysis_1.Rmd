@@ -16,6 +16,12 @@ knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
 DESCRIPTION GOES HERE
 Type of data, how much data, types of data, what is an abalone
 
+Non-uniform class
+Messy classes
+shucked weight does not increase at same pace as whole weight in older abelone
+
+1-2 sentences on conculsion of project
+
 -----
 
 Submit both the .Rmd and .html files for grading. You may remove the instructions and example problem above, but do not remove the YAML metadata block or the first, "setup" code chunk.  Address the steps that appear below and answer all the questions. Be sure to address each question with code and comments as needed.  You may use either base R functions or ggplot2 for the visualizations.
@@ -79,7 +85,7 @@ table(mydata$CLASS, mydata$RINGS)
 
 **Question (1 point):  Briefly discuss the variable types and distributional implications such as potential skewness and outliers.**
 
-***Answer: Sex and Class are both categorical variables, Rings is an integer, all other variables are decimal place(Enter your answer here.)***
+***Answer: Sex is a categorical variables. There are 55 more males than females, so that could skew some of the results later to overrepresent male abelone. Length and diameter appear to be roughly normally distributed because the mean and median are close to equal but it looks like the left tail contains one or more an outliers (will have to see in further analysis). Whole weight and volume look to be normally distributed based on these statistics as well but the range is much larger and the mean is only marginally higher than the median. Shuck appears to have a near-normal interquartile range but with such a large max value, it is possible that there are outliers on the right tail. Rings is an integer and because it is a rough estimation of age, the expectation should be for a uniform distribution to make sure that all ages are represented equally, however the statistics here do not show that. The Class variable is another categorical variable that is a representation of rings and age. As you can see from the summary, there are a high proportion of A3 abelones. Ratio was a variable we calculated by taking shuck and dividing by volume. Because the two variables used to calculate the value are near normal, this ratio appears close to normal as well.***
 
 (1)(b) (1 point) Generate a table of counts using SEX and CLASS. Add margins to this table (Hint: There should be 15 cells in this table plus the marginal totals. Apply *table()* first, then pass the table object to *addmargins()* (Kabacoff Section 7.2 pages 144-147)).  Lastly, present a barplot of these data; ignoring the marginal totals.  
 
@@ -99,7 +105,7 @@ legend(x="topright", legend=c("Female","Infant","Male"),
 
 **Question (2 points):  Discuss the sex distribution of abalones.  What stands out about the distribution of abalones by CLASS?**
 
-***Answer: (Enter your answer here.)***
+***Answer: The class variable is a classification of ages based on rings, with A1 being the youngest. Some things stand out about the distribution here. The first observation is that because A1 is the youngest class of abelone, the expectation is that all abelone are classified as infant and there wouldn't be any male or female abelone in this class. The second thing is, that I would expect all of the infant abelone to be in either class A1 or A2 but I see a 60 or so infants in A3 and around 20 infants in the A4 and A5 classes. It seems as though these classifications were not created correctly otherwise, the male. The last thing is that in the A2 and A3 classes, there is a much higher proportion of males than females. This indicates that there is a possibility that the sample taken was either not random, or that male abelone are more represented in the younger population than females.***
 
 (1)(c) (1 point) Select a simple random sample of 200 observations from "mydata" and identify this sample as "work." Use *set.seed(123)* prior to drawing this sample. Do not change the number 123. Note that *sample()* "takes a sample of the specified size from the elements of x." We cannot sample directly from "mydata." Instead, we need to sample from the integers, 1 to 1036, representing the rows of "mydata." Then, select those rows from the data frame (Kabacoff Section 4.10.5 page 87). 
 
@@ -112,7 +118,7 @@ sampleRows <- sample(myDataInts, 200)
 
 work <- mydata[sampleRows,]
 
-plot(work[, 2:6])
+plot(work[, 2:6], pch = 16, , cex = 0.7, col=rgb(1, 108, 89, maxColorValue = 255))
 # use print commands
 # use fig command for plot
 
@@ -123,11 +129,14 @@ plot(work[, 2:6])
 (2)(a) (1 point) Use "mydata" to plot WHOLE versus VOLUME. Color code data points by CLASS.
 
 ```{r Part_2a}
-plot(mydata$WHOLE, mydata$VOLUME, pch = 16, col=brewer.pal(5, "YlGnBu")[mydata$CLASS],
+# sort data so coloring will be applied correctly
+mydata.sorted <- mydata[order(mydata$CLASS),] 
+
+plot(mydata.sorted$WHOLE, mydata.sorted$VOLUME, pch = 16, col=brewer.pal(5, "YlGnBu")[mydata.sorted$CLASS],
      main = "Comparison of Weight of Whole Abelone to Abelone Volume",
      xlab="Whole Weight (grams)", ylab="Volume (cm^3)")
 
-legend(x="bottomright", legend=unique(mydata$CLASS),
+legend(x="bottomright", legend=unique(mydata.sorted$CLASS),
        col=brewer.pal(5, "YlGnBu"), pch=16)
 ```
 
@@ -135,25 +144,28 @@ legend(x="bottomright", legend=unique(mydata$CLASS),
 (2)(b) (2 points) Use "mydata" to plot SHUCK versus WHOLE with WHOLE on the horizontal axis. Color code data points by CLASS. As an aid to interpretation, determine the maximum value of the ratio of SHUCK to WHOLE.  Add to the chart a straight line with zero intercept using this maximum value as the slope of the line. If you are using the 'base R' *plot()* function, you may use *abline()* to add this line to the plot. Use *help(abline)* in R to determine the coding for the slope and intercept arguments in the functions. If you are using ggplot2 for visualizations, *geom_abline()* should be used.
 
 ```{r Part_2b}
-# max value of ratio in shuck to whole
 
-
-plot(mydata$WHOLE, mydata$SHUCK, pch = 16, col=rainbow_hcl(5)[mydata$CLASS],
+# create basic scatter plot with whole weight on the x-axis and shuck on the y-axis
+plot(mydata.sorted$WHOLE, mydata.sorted$SHUCK, pch = 16, col=brewer.pal(5, "YlGnBu")[mydata.sorted$CLASS],
      main = "Comparison of Weight of Whole to Shucked Weight of Abelone",
      xlab="Whole Weight (grams)", ylab="Shucked Weight (grams)")
-# add color to this line
-abline(0, max(mydata$SHUCK/mydata$WHOLE))
-# add text describing meaning of line
-#text(maxX, maxY-.1, paste("max value ",round(maxX, digits = 3), ",", round(maxY, digits = 3), sep = ""),
-#     cex = .8)
-legend(x="bottomright", legend=unique(mydata$CLASS),
-       col=rainbow_hcl(5), pch=16)
+# draw the line reprenting the maximum ratio of shuck to whole weight
+abline(0, max(mydata.sorted$SHUCK/mydata.sorted$WHOLE), col=rgb(1, 108, 89, maxColorValue = 255))
+
+# create text showing point of line intersection
+maxShucktoWhole <- which.max(mydata.sorted$SHUCK/mydata.sorted$WHOLE)
+text(mydata.sorted[maxShucktoWhole,]$WHOLE, mydata.sorted[maxShucktoWhole,]$SHUCK*1.08, 
+  "max ratio", cex = .8)
+
+# add legend indicating color meaning
+legend(x="bottomright", legend=unique(mydata.sorted$CLASS),
+       col=brewer.pal(5, "YlGnBu"), pch=16)
 
 ```
 
 **Question (2 points):  How does the variability in this plot differ from the plot in (a)?  Compare the two displays.  Keep in mind that SHUCK is a part of WHOLE.  Consider the location of the different age classes.**
 
-***Answer: (Enter your answer here.)***
+***Answer: Both plots have a rough positive correlation and similar shape. The plots start out with a tight correlation at the lower values but become more dispersed as the values become larger. The chart comparing abelone volume to whole weight is more dispersed in the higher values than the chart comparing whole weight to shucked weight. In the volume-whole weight comparison chart, regardless of age class, the abelone appear to be spread somewhat evenly across the chart. However, in the whole weight to shucked weight comparison chart, it seems like whole weight continues to increase with age but shucked weight does not increase at the same pace. The older abelone appear to drop in their ratio of whole to shucked weight. Additionally, the maximum value of ratio between whole and shucked weight is in the A3 class, not in the A4 or A5 class.***
 
 -----
 
@@ -185,7 +197,7 @@ grid.arrange(ggHist, ggBloxplot, ggQQPlot)
 
 **Question (2 points): Compare the displays.  How do the distributions compare to normality? Take into account the criteria discussed in the sync sessions to evaluate non-normality.**
 
-***Answer: (Enter your answer here.)***
+***Answer: Each of the three charts above have a slight skew to the right. The histogram shows that there is not a mound shape to the data typically found in a normal distribution. However, the histograms are also not heavily skewed right. The boxplots show the values are tightly packed together around the mean but each has a few high outliers in the right part of the tail. The QQ Plots show that most of the points fall near the QQ line with the exception of the right tail of the data. There is one point in the female chart that is very far from the QQ line that as we'll see later is an extreme outlier.***
 
 (3)(b) (2 points) Use the boxplots to identify RATIO outliers (mild and extreme both) for each sex. Present the abalones with these outlying RATIO values along with their associated variables in "mydata" (Hint:  display the observations by passing a data frame to the kable() function).  
 
@@ -228,7 +240,7 @@ kable(mydata[ratioOutliersExtreme_positions, ], format = "html", caption = "Extr
 
 **Question (2 points):  What are your observations regarding the results in (3)(b)?**
 
-***Answer: (Enter your answer here.)***
+***Answer: There are quite a few mild outliers (19 to be exact). As we saw from the charts above, the plots are slightly skewed right so this is expected. There are also two extreme outliers. The female outlier was immiedately apparent when viewing the small multiple charts created prior to the outlier calculations so that was not shocking. The one infant outlier was just barely beyond the threshold of what constitutes an extreme outlier (.269 vs a threshold of .2685) which is why it was not as noticable as the female outlier. Overall, due to the skew, it is not surprising that there are so many mild outliers or that there is such a high proportion of mild outliers to extreme outliers because the distributions are either normal or extremely skewed.***
 
 -----
 
