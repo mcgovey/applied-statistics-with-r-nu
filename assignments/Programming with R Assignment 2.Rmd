@@ -26,6 +26,16 @@ Depending on the problem, grading will be based on: 1) the correct result, 2) co
 ####  Please delete the Instructions shown above prior to submitting your .Rmd and .html files.
 
 -----
+```{r loadLibraries}
+
+# load color libraries
+#library(colorspace)
+library(RColorBrewer)
+
+# load ggplot
+library(ggplot2)
+library(gridExtra)
+```
 
 ### Test Items (50 points total)
 
@@ -36,7 +46,16 @@ Depending on the problem, grading will be based on: 1) the correct result, 2) co
 (i) The probability of exactly 0 successes.
 
 ```{r test1ai}
+# setup problem
+q1.p = .05
+q1.n = 100
+q1.lamba = q1.n * q1.p
 
+# calculate poisson approximation of 0 successes
+print(paste("poisson distribution exactly 0 success: ", dpois(0, lambda = q1.lamba)))
+
+# calculate normal approximation of 0 successes
+print(paste("normal distribution exactly 0 success: ", dbinom(0, q1.n, q1.p)))
 
 ```
 
@@ -44,14 +63,39 @@ Depending on the problem, grading will be based on: 1) the correct result, 2) co
 
 ```{r test1aii}
 
+# calculate poisson approximation of less than 6 successes
+print(paste("poisson distribution less than 6 success: ", ppois(5, lambda = q1.lamba)))
+
+# calculate normal approximation of less than 6 successes
+print(paste("normal distribution less than 6 success: ", pbinom(5, q1.n, q1.p)))
+
 
 ```
 
 (1)(b) (2 points) Generate side-by-side barplots using *par(mfrow = c(1,2))* or *grid.arrange()*. The left barplot will show Poisson probabilties for outcomes ranging from 0 to 10. The right barplot will show binomial probabilities for outcomes ranging from 0 to 10. Use p = 0.05 and n = 100. Title each plot,  present in color and assign names to the bar; i.e. x-axis value labels.
 
 ```{r test1b}
+# create dataframe with x 1:10
+
+# create data frame for charts
+q1.df <- data.frame(xVal = c(1:10), pois = dpois(c(1:10), lambda = q1.lamba), binom = dbinom(c(1:10), q1.n, q1.p))
 
 
+# create boxplot of poisson distributions for x 1 to 10
+q1.PoisBloxplot <- ggplot(q1.df) +
+  geom_bar(stat = "identity", aes(x = xVal, y = pois, fill = factor(xVal)), color="black") +
+  ylim(0, 0.2) +
+  scale_fill_brewer(palette="BrBG") +
+  labs(x = "X", y="Poisson Probability", fill = "X Values")
+
+# create boxplot of binomial distributions for x 1 to 10
+q1.BinomBloxplot <- ggplot(q1.df) +
+  geom_bar(stat = "identity", aes(x = xVal, y = binom, fill = factor(xVal)), color="black") +
+  ylim(0, 0.2) +
+  scale_fill_brewer(palette="BrBG") +
+  labs(x = "X", y="Binomial Probability", fill = "X Values")
+
+grid.arrange(q1.PoisBloxplot, q1.BinomBloxplot)
 ```
 
 (1)(c) For this problem, refer to Sections 5.2 of Business Statistics. A discrete random variable has outcomes:  0, 1, 2, 3, 4, 5, 6.  The corresponding probabilities in sequence with the outcomes are: 0.215, 0.230, 0.240, 0.182, 0.130, 0.003, 0.001.  In other words, the probabilty of obtaining "0" is 0.215.  
@@ -59,14 +103,28 @@ Depending on the problem, grading will be based on: 1) the correct result, 2) co
 (i) (2 points) Calculate the expected value and variance for this distribution using the general formula for mean and variance of a discrete distribution. To do this, you will need to use integer values from 0 to 6 as outcomes along with the corresponding probabilities. Round your answer to 2 decimal places. 
 
 ```{r test1ci}
+q1.outcomes <- c(0, 1, 2, 3, 4, 5, 6)
+q1.probabilities <- c(0.215, 0.230, 0.240, 0.182, 0.130, 0.003, 0.001)
+q1.discreteDist <- data.frame(q1.outcomes, q1.probabilities)
 
+# calculate mean or expected value
+q1.expected <- sum(q1.outcomes*q1.probabilities)
+print(paste("expected: ", round(q1.expected, digits = 2)))
+
+# calculate variance
+q1.variance <- sum(((q1.outcomes-q1.expected)^2)*q1.probabilities)
+print(paste("variance: ", round(q1.variance, digits = 2)))
 
 ```
 
 (ii) (2 points) Use the *cumsum()* function and plot the cumulative probabilties versus the corresponding outcomes.  Detemine the value of the median for this distribution and show on this plot.
 
 ```{r test1cii}
-
+ggplot(q1.discreteDist) +
+  geom_bar(stat = "identity", aes(x = q1.outcomes, y = cumsum(q1.probabilities), 
+                                  fill = factor(q1.outcomes)), color="black") +
+  scale_fill_brewer(palette="Blues") +
+  labs(x = "X", y="Cumulative Probability", fill = "Outcomes", title = "Cumulative Probability by Outcome")
 
 ```
 
