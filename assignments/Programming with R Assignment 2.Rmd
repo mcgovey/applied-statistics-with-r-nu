@@ -136,6 +136,19 @@ ggplot(q1.discreteDist) +
 
 data(faithful)
 
+# print summary statistics
+summary(faithful)
+
+# create boxplot of wait times
+ggplot(faithful, aes(y = waiting, color = waiting)) +
+  geom_boxplot() +
+  scale_fill_brewer(palette="BrBG") +
+  labs(x = "X", y="Binomial Probability", fill = "X Values")
+
+# calculate empirical probablity
+q2.rowsMeetingCriteria <- faithful[(faithful$eruptions < 3.0) & (faithful$waiting > 70),]
+print(paste("empirical probablity of eruption <3.0 minutes and wait time > 70 is", nrow(q2.rowsMeetingCriteria)/nrow(faithful)))
+
 ```
 
 (i) (2 points) Identify any observations in "faithful" for which the waiting time exceeds 70 minutes and the eruptions are less than 3.0 minutes.  List and show any such observations in a distinct color on a scatterplot of all eruption (vertical axis) and waiting times (horizontal axis). Include a horizontal line at eruption = 3.0, and a vertical line at waiting time = 70.  Add a title and appropriate text. 
