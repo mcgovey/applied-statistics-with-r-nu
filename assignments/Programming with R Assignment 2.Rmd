@@ -1,5 +1,5 @@
 ---
-title: 'Programming with R Assignment #2'
+title: 'mcgovern_kevin'
 output:
   html_document: default
 ---
@@ -8,22 +8,6 @@ output:
 # DO NOT ADD OR REVISE CODE HERE
 knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
 ```
-
-### Instructions
-
-R markdown is a plain-text file format for integrating text and R code, and creating transparent, reproducible and interactive reports. An R markdown file (.Rmd) contains metadata, markdown and R code "chunks", and can be "knit" into numerous output types. Answer the test questions by adding R code to the fenced code areas below each item. Once completed, you will "knit" and submit the resulting .html file, as well the .Rmd file. The .html will include your R code *and* the output.
-
-**Before proceeding, look to the top of the .Rmd for the (YAML) metadata block, where the *title* and *output* are given. Please change *title* from 'Programming with R Test #2' to your name, with the format 'lastName_firstName.'**
-
-If you encounter issues knitting the .html, please send an email via Canvas to your TA.
-
-Each code chunk is delineated by six (6) backticks; three (3) at the start and three (3) at the end. After the opening ticks, arguments are passed to the code chunk and in curly brackets. **Please do not add or remove backticks, or modify the arguments or values inside the curly brackets**.
-
-Depending on the problem, grading will be based on: 1) the correct result, 2) coding efficiency and 3) graphical presentation features (labeling, colors, size, legibility, etc). I will be looking for well-rendered displays.  In the "knit" document, only those results specified in the problem statements should be displayed. For example, do not output - i.e. send to the Console - the contents of vectors or data frames unless requested by the problem.  You should be able to display each solution in fewer than ten lines of code.
-
-**Submit both the .Rmd and .html files for grading.**
-
-####  Please delete the Instructions shown above prior to submitting your .Rmd and .html files.
 
 -----
 ```{r loadLibraries, message = FALSE, warning = FALSE}
@@ -467,16 +451,24 @@ ggplot(data = warpbreaks, aes(x = breaks)) +
 number <- ifelse((warpbreaks$breaks < q5.medianBreaks), "Below", "Above")
 
 # add back to data set
+warpbreaks$number <- factor(number)
 
-mytable <- table(A, B, C) 
-ftable(mytable)
+# print summary of warpbreaks
+summary(warpbreaks)
+
+# output contingency table
+q5.contingencyTable <- table(warpbreaks$tension, warpbreaks$number) 
+q5.contingencyTable
 
 ```
 
 (5)(b)(2 points)  Using the table constructed in (5)(a), test at the 5% level the null hypothesis of independence using the uncorrected *chisq.test()* (Black, Business Statistics, Section 16.2). Show the results of this test and state your conclusions. 
 
 ```{r test5b}
+q5.chisq <- chisq.test(q5.contingencyTable)
+q5.chisq
 
+print(paste("With a p-value of", q5.chisq$p.value, "we should reject the hypothesis at the 5% level, and accept the alternative."))
 
 ```
 
@@ -486,37 +478,31 @@ ftable(mytable)
 Shown below are examples of the type of function required.  These examples will have to be modified to accomodate the table generated in (5)(a).  
 
 ```{r test5c}
-
-chi <- function(x) {
-   # To be used with 2x2 contingency tables that have margins added.
-   # Expected values are calculated.
-     e11 <- x[3,1]*x[1,3]/x[3,3]
-     e12 <- x[3,2]*x[1,3]/x[3,3]
-     e21 <- x[3,1]*x[2,3]/x[3,3]
-     e22 <- x[3,2]*x[2,3]/x[3,3]
-   # Value of chi square statistic is calculated.
-     chisqStat <- (x[1,1] - e11)^2/e11 + (x[1,2] - e12)^2/e12 +
-       (x[2,1] - e21)^2/e21 + (x[2,2] - e22)^2/e22
-     return(list("chi-squared" = chisqStat,
-                 "p-value" = pchisq(chisqStat, 1, lower.tail = F)))
-}
-
+# create function for calculating chisq values
 chisqfun <- function(t) {
-   x <- addmargins(t)
-   e <- matrix(0, nrow = nrow(t), ncol = ncol(t), byrow = T)
-   r <- matrix(0, nrow = nrow(t), ncol = ncol(t), byrow = T)
-   for (i in 1:2) {
-       for (j in 1:2) {
-          e[i,j] = x[nrow(x),j] * x[i,ncol(x)]/x[nrow(x), ncol(x)]
-         r[i,j] = ((x[i,j] - e[i,j])^2)/e[i,j]
-         }
-     }
+  x <- addmargins(t)
+  e <- matrix(0, nrow = nrow(t), ncol = ncol(t), byrow = T)
+  r <- matrix(0, nrow = nrow(t), ncol = ncol(t), byrow = T)
+  # Loop by row (over total number of rows first)
+  for (i in 1:nrow(t)) {
+    # Nested loop to loop over each column
+    for (j in 1:ncol(t)) {
+      e[i,j] = x[nrow(x),j] * x[i,ncol(x)]/x[nrow(x), ncol(x)]
+      r[i,j] = ((x[i,j] - e[i,j])^2)/e[i,j]
+    }
+  }
+  # summarize all cells for chi-square stat
   chi <- sum(r)
+  # calculate degrees of freedom
   xdf <- nrow(t) - 1
-  pv <- pchisq(chi, df = xdf, lower.tail = FALSE) 
- return(cat("Pearson's Chi-squared test \\n","Chi sq: ", chi, "; 
-            Degree of Freedom :",xdf," ; P-value :",pv))
+  # calculate p-value
+  pv <- pchisq(chi, df = xdf, lower.tail = FALSE)
+  return(cat("\nPearson's Chi-squared test \n\n","X-squared = ", chi, ", df = ",xdf,", p-value = ",pv, sep = ""))
 }
+chisqfun(q5.contingencyTable)
 
+print("Compare the output above of the user defined function to the output generated by the chisq.test function below.")
+
+q5.chisq
 
 ```
