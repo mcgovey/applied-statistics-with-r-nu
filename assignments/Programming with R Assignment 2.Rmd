@@ -29,12 +29,18 @@ Depending on the problem, grading will be based on: 1) the correct result, 2) co
 ```{r loadLibraries, message = FALSE, warning = FALSE}
 
 # load color libraries
-#library(colorspace)
 library(RColorBrewer)
 
 # load ggplot
 library(ggplot2)
 library(gridExtra)
+
+# load library to transform data
+library(reshape2)
+
+# add library for table styling
+#library(knitr)
+library(kableExtra)
 ```
 
 ### Test Items (50 points total)
@@ -180,7 +186,6 @@ ggplot(q2.faithfulDf, aes(x = eruptions, y = waiting, color = criteriaMatch)) +
 One way to do this is to pass the vector of waiting times - faithful$waiting - to *matrix()*, specifying 2 columns for our matrix, with values organized by row; i.e. byrow = TRUE.
 
 ```{r test2b}
-library(reshape2)
 # create pair number and pair column
 q2.faithfulDf$pairNum <- ceiling(1:nrow(q2.faithfulDf)/2)
 q2.faithfulDf$pairs <- rep(c("first", "second"), length.out=nrow(q2.faithfulDf))
@@ -239,14 +244,28 @@ str(result)
 (3)(a) (2 points) Display two side-by-side vertical boxplots using par(mfrow = c(1,2)).  One boxplot would display diet "1" and the other diet "3". 
 
 ```{r test3a}
+q3.result1 <- result[result$Diet == 1,]
+q3.result3 <- result[result$Diet == 3,]
 
+par(mfrow = c(1,2))
+# chick weight boxplot of diet 1
+boxplot(q3.result1$weight, col = rgb(44, 127, 184, maxColorValue = 255), 
+        ylim = c(100, 400), main = "Chicks on experimental diet 1", 
+        sub = "21 days after birth", ylab = "Weight")
+
+# chick weight boxplot of diet 3
+boxplot(q3.result3$weight, col = rgb(127, 205, 187, maxColorValue = 255),
+        ylim = c(100, 400), main = "Chicks on experimental diet 3", 
+        sub = "21 days after birth", ylab = "Weight")
 
 ```
 
 (3)(b) (2 points)  Use the "weight" data for the two diets to test the null hypothesis of equal population mean weights for the two diets. Test at the 95% confidence level with a two-sided t-test. This can be done using *t.test()* in R. Assume equal variances. Display the results of t.test().
 
 ```{r test3b}
-
+# test for pop weight 1 different than mean than weight 3
+t.test(q3.result1$weight, q3.result3$weight, alternative = c("two.sided"), mu = 0,
+       paired = FALSE, var.equal = TRUE, conf.level = .95)
 
 ```
 
@@ -269,11 +288,21 @@ post <- subset(ChickWeight[index, ], Time == 21, select = weight)$weight
 # The pre and post values are paired, each pair corresponding to an individual chick.
 cbind(pre, post)
 
+
 ```
 
 (3)(c) (2 points) Present a scatterplot of the variable "post" as a function of the variable "pre".  Include a diagonal line with zero intercept and slope equal to one. Title and label the variables in this scatterplot.  
 
 ```{r test3c}
+# create binded data as data frame
+q3.pairedData <- as.data.frame(cbind(pre, post))
+
+# create a scatterplot of volume, split by rings
+ggplot(data = q3.pairedData, aes(y = post, x = pre, color=rgb(127, 205, 187, maxColorValue = 255))) +
+  geom_point() +
+  geom_line(aes(x = pre, y = pre)) +
+  theme(legend.position = "none") +
+  labs(x = "Day 20 Observation", y = "Day 21 Observation", title = "Matched Pair Chick Weight Observations (Day 20 vs 21)")
 
 
 ```
@@ -281,7 +310,35 @@ cbind(pre, post)
 (3)(d) (4 points) Calculate and present a one-sided, 95% confidence interval for the average weight gain from day 20 to day 21. Write the code for the paired t-test and for determination of the confidence interval endpoints. **Do not use *t.test()**, although you may check your answers using this function. Present the resulting test statistic value, critical value, p-value and confidence interval.
 
 ```{r test3d}
+# one tailed t-test
+q3.alpha <- .05
+q3.n <- nrow(q3.pairedData)
+q3.degfree <- q3.n - 1
+# calculate test statistic
+q3.criticalValue <- qt(q3.alpha, q3.degfree, lower.tail = TRUE)
+print(paste("Critical Value based on .05 alpha and df is:", q3.criticalValue))
 
+q3.d <- q3.pairedData$pre - q3.pairedData$post
+q3.dBar <- mean(q3.d)
+q3.dStdDev <- sd(q3.d)
+
+# calculate observed t
+q3.observedT <- (q3.dBar-0)/(q3.dStdDev/sqrt(q3.n))
+# print critical value
+print(paste("Test Statistic is:",q3.observedT))
+
+# calculate confidence interval
+q3.upperConf <- q3.dBar - q3.criticalValue * (q3.dStdDev / sqrt(q3.n))
+q3.lowerConf <- q3.dBar + q3.criticalValue * (q3.dStdDev / sqrt(q3.n))
+print(paste("95% Confidence Interval is ", q3.lowerConf, "to", q3.upperConf))
+
+# calculate p value
+q3.pVal <- pt(q3.observedT ,q3.degfree, lower.tail = TRUE)
+print(paste("The p-value is", round(q3.pVal, digits = 5), "which is less than .05. Therefore, we reject null hypothesis and accept the alternative."))
+
+# use below to test results found above
+#t.test(q3.pairedData$pre, q3.pairedData$post, alternative = c("less"), mu = 0,
+#       paired = TRUE, var.equal = TRUE, conf.level = .95)
 
 ```
 
@@ -305,6 +362,19 @@ curve(dnorm(x, mean = m, sd = std), col = "orange", lwd = 2, add = TRUE)
 ```{r test4a}
 
 library(moments) 
+# calculate skewness and kurtosis
+print(paste("Nile River flow skewness is", skewness(Nile)))
+print(paste("Nile River flow kurtosis is", kurtosis(Nile)))
+
+par(mfrow = c(1, 2))
+qqnorm(Nile, col = rgb(44, 127, 184, maxColorValue = 255),
+       cex = 0.6, pch = 16,
+       main = "QQ Plot of Nile River flow")
+qqline(Nile)
+# nile river flow boxplot 
+boxplot(Nile, col = rgb(127, 205, 187, maxColorValue = 255),
+        main = "Nile River Flow from 1871-1970", 
+        ylab = "Annual Flow")
 
 ```
 
@@ -312,13 +382,61 @@ library(moments)
 
 ```{r test4b}
 
+# create a vector with all values from start to length of data set
+q4.nileIntVector <- c(1:length(Nile))
+
+# create function to run through iterations
+getSampleStats <- function(iterations, sampleSize, seed) {
+  # create list
+  q4.datalist = list()
+  
+  set.seed(seed)
+  
+  # loop through 1000 samples
+  for (i in 1:iterations) {
+      # get sample
+      q4.sample <- sample(q4.nileIntVector, sampleSize)
+      
+      # store sample mean
+      q4.dat <- data.frame(mean = mean(q4.sample))
+      # store iteration number
+      q4.dat$i <- i
+      q4.datalist[[i]] <- q4.dat # add it to your list
+  }
+  return(q4.datalist)
+}
+# call function to get list of stats of sample size 16, seed 124
+q4.listOfSamples1 <- getSampleStats(1000, 16, 124)
+# flatten list into data frame
+sample1 = do.call(rbind, q4.listOfSamples1)
+
+# call function to get list of stats of sample size 16, seed 127
+q4.listOfSamples1 <- getSampleStats(1000, 64, 127)
+# flatten list into data frame
+sample2 = do.call(rbind, q4.listOfSamples1)
+
+sample1stats <- data.frame(Sample = 1, Mean = mean(sample1$mean), Standard_Deviation = sd(sample1$mean), Variance = var(sample1$mean))
+sample2stats <- data.frame(Sample = 2, Mean = mean(sample2$mean), Standard_Deviation = sd(sample2$mean), Variance = var(sample2$mean))
+
+kable(rbind(sample1stats, sample2stats), format = "html", caption = "Extreme Ratio Outliers Determined by Sex") %>% kable_styling()
 
 ```
 
 (4)(c) (4 points) Present side-by-side histograms of "sample1" and "sample2" with the normal density curve superimposed. To prepare comparable histograms, it will be necessary to use "freq = FALSE" and to maintain the same x-axis with "xlim = c(750, 1050)", and the same y-axis with "ylim = c(0, 0.025)." **To superimpose separate density functions, you will need to use the mean and standard deviation for each "sample" - each histogram - separately.** 
 
 ```{r test4c}
+x <- c(1:1000)
 
+par(mfrow = c(1, 2))
+# create histogram for first sample
+hist(sample1$mean, freq = FALSE, col = "darkblue", xlab = "Mean of Sample 1",
+     ylim = c(0,0.06), xlim = c(25, 75), main = "Histogram of Sample 1 (n=16) Means")
+curve(dnorm(x, mean = sample1stats$Mean, sd = sample1stats$Standard_Deviation), col = "orange", lwd = 2, add = TRUE)
+
+# create histogram for second sample, squished because standard deviation is much smaller
+hist(sample2$mean, freq = FALSE, col = "darkblue", xlab = "Mean of Sample 2",
+     ylim = c(0,0.2), xlim = c(25, 75), main = "Histogram of Sample 2 (n=64) Means")
+curve(dnorm(x, mean = sample2stats$Mean, sd = sample2stats$Standard_Deviation), col = "orange", lwd = 2, add = TRUE)
 
 ```
 
@@ -333,6 +451,25 @@ Create a new variable "number" as follows:  for each value of "breaks", classify
 ```{r test5a}
 
 data(warpbreaks)
+str(warpbreaks)
+
+q5.medianBreaks <- median(warpbreaks$breaks)
+
+# create a scatterplot of volume, split by rings
+ggplot(data = warpbreaks, aes(x = breaks)) +
+  geom_histogram(bins = 30, fill = "#08589e") +
+  geom_vline(xintercept = q5.medianBreaks, color = "#7bccc4") +
+  theme(legend.position = "none") +
+  labs(x = "Number of Breaks", y = "Frequency of Breaks", title = "Histogram of Number of Warp Breaks per Loom (Line indicates median breaks)")
+
+
+# variable for number
+number <- ifelse((warpbreaks$breaks < q5.medianBreaks), "Below", "Above")
+
+# add back to data set
+
+mytable <- table(A, B, C) 
+ftable(mytable)
 
 ```
 
