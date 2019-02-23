@@ -23,7 +23,6 @@ library(gridExtra)
 library(reshape2)
 
 # add library for table styling
-#library(knitr)
 library(kableExtra)
 ```
 
@@ -65,27 +64,25 @@ print(paste("normal distribution less than 6 success: ", pbinom(5, q1.n, q1.p)))
 (1)(b) (2 points) Generate side-by-side barplots using *par(mfrow = c(1,2))* or *grid.arrange()*. The left barplot will show Poisson probabilties for outcomes ranging from 0 to 10. The right barplot will show binomial probabilities for outcomes ranging from 0 to 10. Use p = 0.05 and n = 100. Title each plot,  present in color and assign names to the bar; i.e. x-axis value labels.
 
 ```{r test1b}
-# create dataframe with x 1:10
 
 # create data frame for charts
-q1.df <- data.frame(xVal = c(1:10), pois = dpois(c(1:10), lambda = q1.lamba), binom = dbinom(c(1:10), q1.n, q1.p))
-
+q1.df <- data.frame(xVal = factor(c(0:10)), pois = dpois(c(0:10), lambda = q1.lamba), binom = dbinom(c(0:10), q1.n, q1.p))
 
 # create boxplot of poisson distributions for x 1 to 10
 q1.PoisBloxplot <- ggplot(q1.df) +
-  geom_bar(stat = "identity", aes(x = xVal, y = pois, fill = factor(xVal)), color="black") +
+  geom_bar(stat = "identity", aes(x = xVal, y = pois, fill = xVal), color="black") +
   ylim(0, 0.2) +
   scale_fill_brewer(palette="BrBG") +
-  labs(x = "X", y="Poisson Probability", fill = "X Values")
+  labs(x = "Outcomes", y="Poisson Probability", fill = "X Values", title = "Poisson Distribution 0 to 10")
 
 # create boxplot of binomial distributions for x 1 to 10
 q1.BinomBloxplot <- ggplot(q1.df) +
-  geom_bar(stat = "identity", aes(x = xVal, y = binom, fill = factor(xVal)), color="black") +
+  geom_bar(stat = "identity", aes(x = xVal, y = binom, fill = xVal), color="black") +
   ylim(0, 0.2) +
   scale_fill_brewer(palette="BrBG") +
-  labs(x = "X", y="Binomial Probability", fill = "X Values")
+  labs(x = "Outcomes", y="Binomial Probability", fill = "X Values", title = "Binomial Distribution 0 to 10")
 
-grid.arrange(q1.PoisBloxplot, q1.BinomBloxplot)
+grid.arrange(q1.PoisBloxplot, q1.BinomBloxplot, ncol=2)
 ```
 
 (1)(c) For this problem, refer to Sections 5.2 of Business Statistics. A discrete random variable has outcomes:  0, 1, 2, 3, 4, 5, 6.  The corresponding probabilities in sequence with the outcomes are: 0.215, 0.230, 0.240, 0.182, 0.130, 0.003, 0.001.  In other words, the probabilty of obtaining "0" is 0.215.  
@@ -93,6 +90,7 @@ grid.arrange(q1.PoisBloxplot, q1.BinomBloxplot)
 (i) (2 points) Calculate the expected value and variance for this distribution using the general formula for mean and variance of a discrete distribution. To do this, you will need to use integer values from 0 to 6 as outcomes along with the corresponding probabilities. Round your answer to 2 decimal places. 
 
 ```{r test1ci}
+# setup data
 q1.outcomes <- c(0, 1, 2, 3, 4, 5, 6)
 q1.probabilities <- c(0.215, 0.230, 0.240, 0.182, 0.130, 0.003, 0.001)
 q1.discreteDist <- data.frame(q1.outcomes, q1.probabilities)
@@ -110,11 +108,15 @@ print(paste("variance: ", round(q1.variance, digits = 2)))
 (ii) (2 points) Use the *cumsum()* function and plot the cumulative probabilties versus the corresponding outcomes.  Detemine the value of the median for this distribution and show on this plot.
 
 ```{r test1cii}
+
+# add discre distribution chart
 ggplot(q1.discreteDist) +
-  geom_bar(stat = "identity", aes(x = q1.outcomes, y = cumsum(q1.probabilities), 
+  geom_bar(stat = "identity", aes(x = factor(q1.outcomes), y = cumsum(q1.probabilities), 
                                   fill = factor(q1.outcomes)), color="black") +
+  # add line for median, add one to found median because factor shifts underlying x values to 1-based
+  geom_vline(xintercept = median(q1.outcomes) + 1, color = "#014636") +
   scale_fill_brewer(palette="Blues") +
-  labs(x = "X", y="Cumulative Probability", fill = "Outcomes", title = "Cumulative Probability by Outcome")
+  labs(x = "Outcome", y="Cumulative Probability", fill = "Outcomes", title = "Cumulative Probability by Outcome")
 
 ```
 
@@ -129,11 +131,11 @@ data(faithful)
 # print summary statistics
 summary(faithful)
 
-# create boxplot of wait times
-ggplot(faithful, aes(y = waiting, color = waiting)) +
-  geom_boxplot() +
+# create histogram of wait times
+ggplot(faithful, aes(x = waiting, color = waiting)) +
+  geom_histogram(bins = 30, fill = "#2166ac") +
   scale_fill_brewer(palette="BrBG") +
-  labs(x = "X", y="Binomial Probability", fill = "X Values")
+  labs(x = "Wait Time (minutes)", y="Frequency", title = "Wait Times (minutes) Frequency", fill = "X Values")
 
 # calculate empirical probablity
 q2.rowsMeetingCriteria <- faithful[(faithful$eruptions < 3.0) & (faithful$waiting > 70),]
@@ -149,19 +151,20 @@ q2.faithfulDf <- faithful
 q2.faithfulDf$criteriaMatch <- ifelse((faithful$eruptions < 3.0) & (faithful$waiting > 70), "Match", "No match")
 
 # create scatterplot of eruptions vs. wait times
-ggplot(q2.faithfulDf, aes(x = eruptions, y = waiting, color = criteriaMatch)) +
+ggplot(q2.faithfulDf, aes(x = waiting, y = eruptions, color = criteriaMatch)) +
+  geom_rect(aes(xmin = 70, xmax = Inf, ymin = -Inf, ymax = 3), alpha = 0.1, fill = "#A9A9A9") +
   geom_point() +
-  geom_hline(yintercept = 70, color = "#1b9e77") +
-  geom_vline(xintercept = 3.0, color = "#1b9e77") +
-  scale_color_brewer(palette="Dark2") +
-  labs(x = "Eruptions", y="Wait Time (in minutes)", color = "Criteria", 
-       title = "Eruptions vs. Wait Time (Eruption < 3 and Wait Time > 70 highlighted)")
+  geom_vline(xintercept = 70, color = "#e41a1c") +
+  geom_hline(yintercept = 3.0, color = "#e41a1c") +
+  scale_color_brewer(palette="Set1") +
+  labs(x = "Wait Time (in minutes)", y="Eruptions", color = "Criteria", 
+       title = "Wait Time vs. Eruptions (Eruptions < 3 and Wait Time > 70 highlighted)")
 
 ```
 
 (ii) (1 point) What does the plot suggest about the relationship between eruption time and waiting time?
 
-***Answer: The plot above shows a positive correlation that would likely score have a value close to 1 for the Pearson Correlation Coefficient. The plot also shows the data clustered in two areas. The first being relatively short wait time and a small number of eruptions. The second cluster shows that when the wait time is longer, there tend to be a high number of eruptions.    ***
+***Answer: The plot above shows a positive correlation that would likely score have a value closer to 1 than to 0 for the Pearson Correlation Coefficient. The plot also shows the data clustered in two areas. The first cluster is made up of relatively short wait times and a small number of eruptions. The second cluster shows that when the wait time is longer, there tend to be a high number of eruptions.    ***
 
 -----
 
@@ -174,17 +177,17 @@ One way to do this is to pass the vector of waiting times - faithful$waiting - t
 q2.faithfulDf$pairNum <- ceiling(1:nrow(q2.faithfulDf)/2)
 q2.faithfulDf$pairs <- rep(c("first", "second"), length.out=nrow(q2.faithfulDf))
 
-# limit the data brought in
+# limit the columns brought in
 q2.limited <- q2.faithfulDf[,c("pairNum", "pairs", "waiting")]
 
 # melt data to ensure correct format for dcast
 q2.md <- melt(q2.limited, id=c("pairNum","pairs"))
-# create matched pairs and manipulate
+# create matched pairs and manipulate, sum used but only one value per combination found so no summarizing actually occurring
 q2.matchedPairs <- dcast(q2.md, pairNum ~ pairs, fun.aggregate = sum)
 
 # create scatterplot of 1st group vs. 2nd group wait times
-ggplot(q2.matchedPairs, aes(x = first, y = second, color = "#1b9e77")) +
-  geom_point() +
+ggplot(q2.matchedPairs, aes(x = first, y = second)) +
+  geom_point(color = "#016450") +
   theme(legend.position = "none") +
   labs(x = "1st Member Wait Time", y="2nd Member Wait Time",
        title = "Comparison of Wait Times of Consecutive Eruptions")
@@ -200,7 +203,7 @@ q2.kendallCorrelation <- cor.test(q2.matchedPairs$first, q2.matchedPairs$second,
 q2.kendallCorrelation
 
 # print output
-print(paste("The above test shows a p value below 0.05 of", round(q2.kendallCorrelation$p.value, 7), "therefore we reject the null hypothesis and accept the alternative"))
+print(paste("The above test shows a p value of", round(q2.kendallCorrelation$p.value, 7), "which is below the alpha level of 0.05, therefore we reject the null hypothesis and accept the alternative"))
 
 ```
 
@@ -234,12 +237,12 @@ q3.result3 <- result[result$Diet == 3,]
 par(mfrow = c(1,2))
 # chick weight boxplot of diet 1
 boxplot(q3.result1$weight, col = rgb(44, 127, 184, maxColorValue = 255), 
-        ylim = c(100, 400), main = "Chicks on experimental diet 1", 
+        ylim = c(100, 400), main = "Experimental Diet 1 Chicks", 
         sub = "21 days after birth", ylab = "Weight")
 
 # chick weight boxplot of diet 3
 boxplot(q3.result3$weight, col = rgb(127, 205, 187, maxColorValue = 255),
-        ylim = c(100, 400), main = "Chicks on experimental diet 3", 
+        ylim = c(100, 400), main = "Experimental Diet 3 Chicks", 
         sub = "21 days after birth", ylab = "Weight")
 
 ```
@@ -282,9 +285,9 @@ cbind(pre, post)
 q3.pairedData <- as.data.frame(cbind(pre, post))
 
 # create a scatterplot of volume, split by rings
-ggplot(data = q3.pairedData, aes(y = post, x = pre, color=rgb(127, 205, 187, maxColorValue = 255))) +
-  geom_point() +
-  geom_line(aes(x = pre, y = pre)) +
+ggplot(data = q3.pairedData, aes(y = post, x = pre)) +
+  geom_point(color = "#0c2c84") +
+  geom_abline(intercept = 0, color = "#41b6c4") +
   theme(legend.position = "none") +
   labs(x = "Day 20 Observation", y = "Day 21 Observation", title = "Matched Pair Chick Weight Observations (Day 20 vs 21)")
 
@@ -315,14 +318,15 @@ print(paste("Test Statistic is:",q3.observedT))
 q3.upperConf <- q3.dBar - q3.criticalValue * (q3.dStdDev / sqrt(q3.n))
 q3.lowerConf <- q3.dBar + q3.criticalValue * (q3.dStdDev / sqrt(q3.n))
 print(paste("95% Confidence Interval is ", q3.lowerConf, "to", q3.upperConf))
+# Note lower confidence level is essentially equivalent to -Inf due to distribution
 
 # calculate p value
 q3.pVal <- pt(q3.observedT ,q3.degfree, lower.tail = TRUE)
 print(paste("The p-value is", round(q3.pVal, digits = 5), "which is less than .05. Therefore, we reject null hypothesis and accept the alternative."))
 
-# use below to test results found above
-#t.test(q3.pairedData$pre, q3.pairedData$post, alternative = c("less"), mu = 0,
-#       paired = TRUE, var.equal = TRUE, conf.level = .95)
+# compare to results found above
+t.test(q3.pairedData$pre, q3.pairedData$post, alternative = c("less"), mu = 0,
+       paired = TRUE, var.equal = TRUE, conf.level = .95)
 
 ```
 
@@ -351,6 +355,7 @@ print(paste("Nile River flow skewness is", skewness(Nile)))
 print(paste("Nile River flow kurtosis is", kurtosis(Nile)))
 
 par(mfrow = c(1, 2))
+# create qq-norm plot - left x and y labels off because default labels sufficiently describes representation
 qqnorm(Nile, col = rgb(44, 127, 184, maxColorValue = 255),
        cex = 0.6, pch = 16,
        main = "QQ Plot of Nile River flow")
@@ -399,9 +404,11 @@ q4.listOfSamples1 <- getSampleStats(1000, 64, 127)
 # flatten list into data frame
 sample2 = do.call(rbind, q4.listOfSamples1)
 
+# calculate mean, standard devision, and variance for each of the two sample means
 sample1stats <- data.frame(Sample = 1, Mean = mean(sample1$mean), Standard_Deviation = sd(sample1$mean), Variance = var(sample1$mean))
 sample2stats <- data.frame(Sample = 2, Mean = mean(sample2$mean), Standard_Deviation = sd(sample2$mean), Variance = var(sample2$mean))
 
+# output table of statistics for both samples
 kable(rbind(sample1stats, sample2stats), format = "html", caption = "Extreme Ratio Outliers Determined by Sex") %>% kable_styling()
 
 ```
@@ -413,14 +420,14 @@ x <- c(1:1000)
 
 par(mfrow = c(1, 2))
 # create histogram for first sample
-hist(sample1$mean, freq = FALSE, col = "darkblue", xlab = "Mean of Sample 1",
-     ylim = c(0,0.06), xlim = c(25, 75), main = "Histogram of Sample 1 (n=16) Means")
-curve(dnorm(x, mean = sample1stats$Mean, sd = sample1stats$Standard_Deviation), col = "orange", lwd = 2, add = TRUE)
+hist(sample1$mean, freq = FALSE, col = "#018571", xlab = "Means of Sample 1",
+     ylim = c(0,0.2), xlim = c(25, 75), main = "Sample 1 (n=16) Means")
+curve(dnorm(x, mean = sample1stats$Mean, sd = sample1stats$Standard_Deviation), col = "#a6611a", lwd = 2, add = TRUE)
 
 # create histogram for second sample, squished because standard deviation is much smaller
-hist(sample2$mean, freq = FALSE, col = "darkblue", xlab = "Mean of Sample 2",
-     ylim = c(0,0.2), xlim = c(25, 75), main = "Histogram of Sample 2 (n=64) Means")
-curve(dnorm(x, mean = sample2stats$Mean, sd = sample2stats$Standard_Deviation), col = "orange", lwd = 2, add = TRUE)
+hist(sample2$mean, freq = FALSE, col = "#018571", xlab = "Means of Sample 2",
+     ylim = c(0,0.2), xlim = c(25, 75), main = "Sample 2 (n=64) Means")
+curve(dnorm(x, mean = sample2stats$Mean, sd = sample2stats$Standard_Deviation), col = "#a6611a", lwd = 2, add = TRUE)
 
 ```
 
@@ -437,18 +444,18 @@ Create a new variable "number" as follows:  for each value of "breaks", classify
 data(warpbreaks)
 str(warpbreaks)
 
-q5.medianBreaks <- median(warpbreaks$breaks)
+# calculate median breaks
+median_breaks <- median(warpbreaks$breaks)
 
 # create a scatterplot of volume, split by rings
 ggplot(data = warpbreaks, aes(x = breaks)) +
-  geom_histogram(bins = 30, fill = "#08589e") +
-  geom_vline(xintercept = q5.medianBreaks, color = "#7bccc4") +
+  geom_histogram(bins = 30, fill = "#2166ac") +
+  geom_vline(xintercept = median_breaks, color = "#b2182b") +
   theme(legend.position = "none") +
   labs(x = "Number of Breaks", y = "Frequency of Breaks", title = "Histogram of Number of Warp Breaks per Loom (Line indicates median breaks)")
 
-
-# variable for number
-number <- ifelse((warpbreaks$breaks < q5.medianBreaks), "Below", "Above")
+# if-else to create variable for number
+number <- ifelse((warpbreaks$breaks < median_breaks), "Below", "Above")
 
 # add back to data set
 warpbreaks$number <- factor(number)
@@ -497,12 +504,17 @@ chisqfun <- function(t) {
   xdf <- nrow(t) - 1
   # calculate p-value
   pv <- pchisq(chi, df = xdf, lower.tail = FALSE)
-  return(cat("\nPearson's Chi-squared test \n\n","X-squared = ", chi, ", df = ",xdf,", p-value = ",pv, sep = ""))
+  cat("\nPearson's Chi-squared test \n\n","X-squared = ", chi, ", df = ",xdf,", p-value = ",pv, sep = "")
+  invisible(list(p.value = pv, statistic = chi, parameter = xdf))
 }
-chisqfun(q5.contingencyTable)
+# assign user defined function and print output
+q5.userDefinedChisq <- chisqfun(q5.contingencyTable)
 
-print("Compare the output above of the user defined function to the output generated by the chisq.test function below.")
-
+# output original test
 q5.chisq
+
+# compare two tests
+print(paste("Compare the output above of the user defined function to the output generated by the chisq.test function. User defined p value of", q5.userDefinedChisq$p.value, "vs", q5.chisq$p.value, "and chi-squared of", q5.userDefinedChisq$statistic, "vs", q5.chisq$statistic))
+
 
 ```
