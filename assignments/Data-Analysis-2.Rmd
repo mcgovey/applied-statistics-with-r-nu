@@ -73,17 +73,17 @@ print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$RATIO
 
 ```{r Part_1b}
 # calculate metric for log ratio
-mydata$LOG_RATIO <- log10(mydata$RATIO)
+mydata$L_RATIO <- log10(mydata$RATIO)
 
 # build qq plot of log ratio
-q1.qqplot <- ggplot(data = mydata, aes(sample = LOG_RATIO)) +
+q1.qqplot <- ggplot(data = mydata, aes(sample = L_RATIO)) +
   geom_qq(color='#2c7fb8') +
   geom_qq_line() +
   theme(legend.position = "none") +
   labs(x = "Theoretical", y = "Sample Ratio", title = "QQ Plot of Log10 Ratio")
 
 # build histogram of log ratio
-q1.hist <- ggplot(data = mydata, aes(x = LOG_RATIO)) +
+q1.hist <- ggplot(data = mydata, aes(x = L_RATIO)) +
   geom_histogram(binwidth=.02, fill='#2c7fb8') +
   theme(legend.position = "none") +
   labs(x = "Ratio", y = "Count", title = "Histogram of Log10 Ratio")
@@ -91,8 +91,8 @@ q1.hist <- ggplot(data = mydata, aes(x = LOG_RATIO)) +
 grid.arrange(q1.qqplot, q1.hist, ncol=2)
 
 # output skewness and kurtosis
-print(paste("Skewness of ratio of shuck weight to volume", skewness(mydata$LOG_RATIO)))
-print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$LOG_RATIO)))
+print(paste("Skewness of ratio of shuck weight to volume", skewness(mydata$L_RATIO)))
+print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$L_RATIO)))
 ```
 
 (1)(c) Test the homogeneity of variance across classes using *bartlett.test()* (Kabacoff Section 9.2.2, p. 222). 
@@ -104,7 +104,7 @@ bartlett.test(mydata$RATIO ~ mydata$CLASS)
 
 # Bartlett test of homogeneity across classes using log ratio as dependent variable
 print("Test log10 ratio homogeneity")
-bartlett.test(mydata$LOG_RATIO ~ mydata$CLASS)
+bartlett.test(mydata$L_RATIO ~ mydata$CLASS)
 
 ```
 
@@ -118,6 +118,13 @@ bartlett.test(mydata$LOG_RATIO ~ mydata$CLASS)
 
 ```{r Part_2a}
 
+# Two Way ANOVA with interaction term CLASS:SEX
+q2.aov_interaction <- aov(L_RATIO ~ CLASS + SEX + CLASS:SEX, data = mydata)
+summary(q2.aov_interaction)
+
+# Two Way ANOVA without interaction term CLASS:SEX
+q2.aov_wo_interaction <- aov(L_RATIO ~ CLASS + SEX, data = mydata)
+summary(q2.aov_wo_interaction)
 
 ```
 
@@ -128,13 +135,13 @@ bartlett.test(mydata$LOG_RATIO ~ mydata$CLASS)
 (2)(b) For the model without CLASS:SEX (i.e. an interaction term), obtain multiple comparisons with the *TukeyHSD()* function. Interpret the results at the 95% confidence level (*TukeyHSD()* will adjust for unequal sample sizes). 
 
 ```{r Part_2b}
-
+TukeyHSD(q2.aov_wo_interaction, conf.level = 0.95)
 
 ```
 
 **Additional Essay Question:  first, interpret the trend in coefficients across age classes. What is this indicating about L_RATIO?  Second, do these results suggest male and female abalones can be combined into a single category labeled as 'adults?' If not, why not?**
 
-***Answer: (Enter your answer here.)***
+***Answer: Signif difference in means for log ratio of all classes except A1-A2, reject null that means are the same between classes and accept alternative. For sex, fail to reject the null that there is a significant difference between means of males and females. For difference in means between infants and males, as well as infants and females, reject null and accept alternative.***
 
 
 ###Section 3 (10 points)

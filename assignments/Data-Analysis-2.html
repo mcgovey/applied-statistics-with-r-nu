@@ -226,7 +226,7 @@ $(document).ready(function () {
 <pre><code>## 
 ##  Bartlett test of homogeneity of variances
 ## 
-## data:  mydata$LOG_RATIO by mydata$CLASS
+## data:  mydata$L_RATIO by mydata$CLASS
 ## Bartlett's K-squared = 3.1891, df = 4, p-value = 0.5267</code></pre>
 <p><strong>Essay Question: Based on steps 1.a, 1.b and 1.c, which variable RATIO or L_RATIO exhibits better conformance to a normal distribution with homogeneous variances across age classes? Why?</strong></p>
 <p><strong><em>Answer: (Enter your answer here.)</em></strong></p>
@@ -234,11 +234,47 @@ $(document).ready(function () {
 <div id="section-2-10-points" class="section level3">
 <h3>Section 2 (10 points)</h3>
 <p>(2)(a) Perform an analysis of variance with <em>aov()</em> on L_RATIO using CLASS and SEX as the independent variables (Kabacoff chapter 9, p. 212-229). Assume equal variances. Perform two analyses. First, fit a model with the interaction term CLASS:SEX. Then, fit a model without CLASS:SEX. Use <em>summary()</em> to obtain the analysis of variance tables (Kabacoff chapter 9, p. 227).</p>
+<pre><code>##               Df Sum Sq Mean Sq F value  Pr(&gt;F)    
+## CLASS          4  1.055 0.26384  38.370 &lt; 2e-16 ***
+## SEX            2  0.091 0.04569   6.644 0.00136 ** 
+## CLASS:SEX      8  0.027 0.00334   0.485 0.86709    
+## Residuals   1021  7.021 0.00688                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<pre><code>##               Df Sum Sq Mean Sq F value  Pr(&gt;F)    
+## CLASS          4  1.055 0.26384  38.524 &lt; 2e-16 ***
+## SEX            2  0.091 0.04569   6.671 0.00132 ** 
+## Residuals   1029  7.047 0.00685                    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p><strong>Essay Question: Compare the two analyses. What does the non-significant interaction term suggest about the relationship between L_RATIO and the factors CLASS and SEX?</strong></p>
 <p><strong><em>Answer: (Enter your answer here.)</em></strong></p>
 <p>(2)(b) For the model without CLASS:SEX (i.e. an interaction term), obtain multiple comparisons with the <em>TukeyHSD()</em> function. Interpret the results at the 95% confidence level (<em>TukeyHSD()</em> will adjust for unequal sample sizes).</p>
+<pre><code>##   Tukey multiple comparisons of means
+##     95% family-wise confidence level
+## 
+## Fit: aov(formula = L_RATIO ~ CLASS + SEX, data = mydata)
+## 
+## $CLASS
+##              diff         lwr          upr     p adj
+## A2-A1 -0.01248831 -0.03876038  0.013783756 0.6919456
+## A3-A1 -0.03426008 -0.05933928 -0.009180867 0.0018630
+## A4-A1 -0.05863763 -0.08594237 -0.031332896 0.0000001
+## A5-A1 -0.09997200 -0.12764430 -0.072299703 0.0000000
+## A3-A2 -0.02177176 -0.04106269 -0.002480831 0.0178413
+## A4-A2 -0.04614932 -0.06825638 -0.024042262 0.0000002
+## A5-A2 -0.08748369 -0.11004316 -0.064924223 0.0000000
+## A4-A3 -0.02437756 -0.04505283 -0.003702280 0.0114638
+## A5-A3 -0.06571193 -0.08687025 -0.044553605 0.0000000
+## A5-A4 -0.04133437 -0.06508845 -0.017580286 0.0000223
+## 
+## $SEX
+##             diff          lwr           upr     p adj
+## I-F -0.015890329 -0.031069561 -0.0007110968 0.0376673
+## M-F  0.002069057 -0.012585555  0.0167236690 0.9412689
+## M-I  0.017959386  0.003340824  0.0325779478 0.0111881</code></pre>
 <p><strong>Additional Essay Question: first, interpret the trend in coefficients across age classes. What is this indicating about L_RATIO? Second, do these results suggest male and female abalones can be combined into a single category labeled as ‘adults?’ If not, why not?</strong></p>
-<p><strong><em>Answer: (Enter your answer here.)</em></strong></p>
+<p><strong><em>Answer: Signif difference in means for log ratio of all classes except A1-A2, reject null that means are the same between classes and accept alternative. For sex, fail to reject the null that there is a significant difference between means of males and females. For difference in means between infants and males, as well as infants and females, reject null and accept alternative.</em></strong></p>
 </div>
 <div id="section-3-10-points" class="section level3">
 <h3>Section 3 (10 points)</h3>
