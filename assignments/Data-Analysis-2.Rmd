@@ -48,20 +48,63 @@ str(mydata)
 
 ```{r Part_1a}
 
+# build qq plot of ratio
+q1.qqplot <- ggplot(data = mydata, aes(sample = RATIO)) +
+  geom_qq(color='#2c7fb8') +
+  geom_qq_line() +
+  theme(legend.position = "none") +
+  labs(x = "Theoretical", y = "Sample Ratio", title = "QQ Plot of Shuck Weight to Volume")
+
+# build histogram of ratio
+q1.hist <- ggplot(data = mydata, aes(x = RATIO)) +
+  geom_histogram(binwidth=.02, fill='#2c7fb8') +
+  theme(legend.position = "none") +
+  labs(x = "Ratio", y = "Count", title = "Histogram of Shuck Weight to Volume")
+
+grid.arrange(q1.qqplot, q1.hist, ncol=2)
+
+# output skewness and kurtosis
+print(paste("Skewness of ratio of shuck weight to volume", skewness(mydata$RATIO)))
+print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$RATIO)))
 
 ```
 
 (1)(b) Tranform RATIO using *log10()* to create L_RATIO (Kabacoff Section 8.5.2, p. 199-200). Form a histogram and QQ plot using L_RATIO. Calculate the skewness and kurtosis. Create a boxplot of L_RATIO differentiated by CLASS.
 
 ```{r Part_1b}
+# calculate metric for log ratio
+mydata$LOG_RATIO <- log10(mydata$RATIO)
 
+# build qq plot of log ratio
+q1.qqplot <- ggplot(data = mydata, aes(sample = LOG_RATIO)) +
+  geom_qq(color='#2c7fb8') +
+  geom_qq_line() +
+  theme(legend.position = "none") +
+  labs(x = "Theoretical", y = "Sample Ratio", title = "QQ Plot of Log10 Ratio")
 
+# build histogram of log ratio
+q1.hist <- ggplot(data = mydata, aes(x = LOG_RATIO)) +
+  geom_histogram(binwidth=.02, fill='#2c7fb8') +
+  theme(legend.position = "none") +
+  labs(x = "Ratio", y = "Count", title = "Histogram of Log10 Ratio")
+
+grid.arrange(q1.qqplot, q1.hist, ncol=2)
+
+# output skewness and kurtosis
+print(paste("Skewness of ratio of shuck weight to volume", skewness(mydata$LOG_RATIO)))
+print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$LOG_RATIO)))
 ```
 
 (1)(c) Test the homogeneity of variance across classes using *bartlett.test()* (Kabacoff Section 9.2.2, p. 222). 
 
 ```{r Part_1c}
+# Bartlett test of homogeneity across classes using ratio as dependent variable
+print("Test raw ratio homogeneity")
+bartlett.test(mydata$RATIO ~ mydata$CLASS)
 
+# Bartlett test of homogeneity across classes using log ratio as dependent variable
+print("Test log10 ratio homogeneity")
+bartlett.test(mydata$LOG_RATIO ~ mydata$CLASS)
 
 ```
 
