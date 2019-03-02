@@ -164,17 +164,39 @@ table(mydata$SEX, mydata$TYPE)
 
 ```{r Part_3a2}
 
+ggplot(data = mydata, aes(x = VOLUME, fill=TYPE)) +
+  geom_histogram(bins = 30) +
+  facet_grid(. ~ TYPE) +
+  scale_fill_brewer(palette="Set2") +
+  labs(x = "Volume", y = "Count", title = "Histogram of Abalone Volume")
+
 ```
 
 
 **Essay Question: Compare the histograms.  How do the distributions differ? Are there going to be any difficulties separating infants from adults based on VOLUME?**
 
-***Answer: (Enter your answer here.)***
+***Answer: Infants skewed right with some outliers***
 
 (3)(b) Create a scatterplot of SHUCK versus VOLUME and a scatterplot of their base ten logarithms, labeling the variables as L_SHUCK and L_VOLUME. Please be aware the variables, L_SHUCK and L_VOLUME, present the data as orders of magnitude (i.e. VOLUME = 100 = 10^2 becomes L_VOLUME = 2). Use color to differentiate CLASS in the plots. Repeat using color to differentiate by TYPE. 
 
 ```{r Part_3b}
+# create log10 variables for shuck and volume
+mydata$L_SHUCK <- log10(mydata$SHUCK)
+mydata$L_VOLUME <- log10(mydata$VOLUME)
 
+# create a scatterplot of volume, split by rings
+q3.shuckVolScatter <- ggplot(data = mydata, aes(y = SHUCK, x = VOLUME, color=CLASS)) +
+  geom_point() +
+  scale_color_brewer(palette="Dark2") +
+  labs(x = "Rings", y="Volume (cm^3)", color = "Class")
+
+# create a scatterplot of whole weight, split by rings
+q3.logShuckVolScatter <- ggplot(data = mydata, aes(y = L_SHUCK, x = L_VOLUME, color=CLASS)) +
+  geom_point() +
+  scale_color_brewer(palette="Dark2") +
+  labs(x = "Rings", y="Whole Weight (grams)", color = "Class")
+
+grid.arrange(q3.shuckVolScatter, q3.logShuckVolScatter, ncol=2)
 
 ```
 
