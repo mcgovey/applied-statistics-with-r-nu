@@ -362,6 +362,9 @@ split.adults
 # create data frame to be used in ggplot
 q6.df <- data.frame(volume.value, prop.adults, prop.infants)
 
+q6.df$prop.adults.harvested <- 1 - prop.adults
+q6.df$prop.infants.harvested <- 1 - prop.infants
+
 # create plot of splits
 ggplot(data = q6.df, aes(x = volume.value)) +
   geom_line(aes(y = prop.adults, color = "Adult")) +
@@ -512,11 +515,11 @@ q9.points = do.call(rbind, q9.pointlist)
 
 
 # create plot of splits
-ggplot(data = q6.df, aes(y = (1 - prop.adults), x = (1 - prop.infants))) +
+ggplot(data = q6.df, aes(y = prop.adults.harvested, x = prop.infants.harvested)) +
   geom_line(color = "#016450") +
   geom_point(data = q9.points, aes(x = infants, y = adults)) +
   geom_abline(slope = 1, linetype = "dashed", color = "#696969") +
-  #annotate("text", x = q7.maxVal + 50, y = 0.5, label = round(q7.maxVal, digits = 2)) +
+  annotate("text", x = q9.points$infants + .17, y = q9.points$adults - .01, label = paste(q9.points$text, "volume:", round(q9.points$volume, digits = 2))) +
   labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume with Smoothed Difference")
 
 
@@ -525,7 +528,7 @@ ggplot(data = q6.df, aes(y = (1 - prop.adults), x = (1 - prop.infants))) +
 (9)(b) Numerically integrate the area under the ROC curve and report your result. This is most easily done with the *auc()* function from the "flux" package.   Areas-under-curve, or AUCs, greater than 0.8 are taken to indicate good discrimination potential. 
 
 ```{r Part_9b}
-
+print(paste("The Area Under the Curve is", auc(q6.df$prop.infants.harvested, q6.df$prop.adults.harvested)))
 
 ```
 
