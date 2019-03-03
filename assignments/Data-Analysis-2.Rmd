@@ -99,10 +99,6 @@ print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$L_RAT
 (1)(c) Test the homogeneity of variance across classes using *bartlett.test()* (Kabacoff Section 9.2.2, p. 222). 
 
 ```{r Part_1c}
-# Bartlett test of homogeneity across classes using ratio as dependent variable
-print("Test raw ratio homogeneity")
-bartlett.test(mydata$RATIO ~ mydata$CLASS)
-
 # Bartlett test of homogeneity across classes using log ratio as dependent variable
 print("Test log10 ratio homogeneity")
 bartlett.test(mydata$L_RATIO ~ mydata$CLASS)
@@ -120,7 +116,7 @@ bartlett.test(mydata$L_RATIO ~ mydata$CLASS)
 ```{r Part_2a}
 
 # Two Way ANOVA with interaction term CLASS:SEX
-q2.aov_interaction <- aov(L_RATIO ~ CLASS + SEX + CLASS:SEX, data = mydata)
+q2.aov_interaction <- aov(L_RATIO ~ CLASS*SEX, data = mydata)
 summary(q2.aov_interaction)
 
 # Two Way ANOVA without interaction term CLASS:SEX
@@ -166,7 +162,7 @@ table(mydata$SEX, mydata$TYPE)
 ```{r Part_3a2}
 
 ggplot(data = mydata, aes(x = VOLUME, fill=TYPE)) +
-  geom_histogram(bins = 30) +
+  geom_histogram(bins = 25) +
   facet_grid(. ~ TYPE) +
   scale_fill_brewer(palette="Set2") +
   labs(x = "Volume", y = "Count", title = "Histogram of Abalone Volume")
@@ -382,7 +378,7 @@ ggplot(data = q6.df, aes(x = volume.value)) +
 
 **Essay Question:  The two 50% "split" values serve a descriptive purpose illustrating the difference between the populations. What do these values suggest regarding possible cutoffs for harvesting?** 
 
-***Answer: (Enter your answer here.)***
+***Answer: At a much lower cutoff, specifically anything above 133.82, we would harvest more than 50% of the infant population. Whereas, the cutoff point where we would harvest more than 50% of the adult population doesn't occur until the cutoff point exceeds 384.51. ***
 
 -----
 
@@ -401,6 +397,8 @@ differences <- ((1 - prop.adults) - (1 - prop.infants))
 # create plot of splits
 ggplot(data = q6.df, aes(x = volume.value, y = differences)) +
   geom_line(color = "#016450") +
+  geom_vline(xintercept = split.adults, linetype = "dashed", color = "#696969") +
+  geom_vline(xintercept = split.infants, linetype = "dashed", color = "#696969") +
   labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume")
 
 ```
@@ -428,9 +426,9 @@ q7.maxVal <- q6.df[which.max(smooth.difference), ]$volume.value
 ggplot(data = q6.df, aes(x = volume.value)) +
   geom_line(aes(y = differences), color = "#016450") +
   geom_line(aes(y = smooth.difference), color = "#016450") +
-  geom_vline(xintercept = q7.maxVal) +
+  geom_vline(xintercept = q7.maxVal, linetype = "dashed", color = "#696969") +
   annotate("text", x = q7.maxVal + 50, y = 0.5, label = round(q7.maxVal, digits = 2)) +
-  labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume")
+  labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume with Smoothed Difference")
 
 ```
 
@@ -439,10 +437,14 @@ ggplot(data = q6.df, aes(x = volume.value)) +
 Code for calculating the adult harvest proportion is provided.
 
 ```{r Part_7d}
+# compute differences
+max.difference.adult <- (1 - prop.adults)[which.max(smooth.difference)]
+max.difference.infant <- (1 - prop.infants)[which.max(smooth.difference)]
 
 # Adult output
-print(paste("Adult harvest proportion:", (1 - prop.adults)[which.max(smooth.difference)])) # [1] 0.7416332
-print(paste("Infant harvest proportion:", (1 - prop.infants)[which.max(smooth.difference)]))
+print(paste("Adult harvest proportion of smoothed max difference:", max.difference.adult)) # [1] 0.7416332
+# Infant output
+print(paste("Infant harvest proportion of smoothed max difference:", max.difference.infant))
 
 ```
 
@@ -458,15 +460,38 @@ There are alternative ways to determine cutoffs. Two such cutoffs are described 
 Compute this cutoff, and the proportions of infants and adults with VOLUME exceeding this cutoff. Code for determining this cutoff is provided. Show these proportions.
 
 ```{r Part_8a}
-volume.value[volume.value > max(mydata[mydata$CLASS == "A1" &
+# find first volume variable where there are no A1 Infants
+q8.cutoff <- volume.value[volume.value > max(mydata[mydata$CLASS == "A1" &
   mydata$TYPE == "I", "VOLUME"])][1] # [1] 206.786
+
+# calculate row number for above cutoff point
+q8.cutoffRow <- which(volume.value == q8.cutoff)
+# calculate adult and infant proportions
+noA1Infants.adult <- (1 - prop.adults)[q8.cutoffRow]
+noA1Infants.infant <- (1 - prop.infants)[q8.cutoffRow]
+
+# Adult output
+print(paste("Adult harvest proportion of no A1 infants method:", noA1Infants.adult))
+# Infant output
+print(paste("Infant harvest proportion of no A1 infants method:", noA1Infants.infant))
 
 ```
 
 (8)(b) Another cutoff is one for which the proportion of adults not harvested equals the proportion of infants harvested. This cutoff would equate these rates; effectively, our two errors:  'missed' adults and wrongly-harvested infants. This leaves for discussion which is the greater loss:  a larger proportion of adults not harvested or infants harvested?  This cutoff is 237.7383. Calculate the separate harvest proportions for infants and adults using this cutoff. Show these proportions.  Code for determining this cutoff is provided.  
 
 ```{r Part_8b}
-volume.value[which.min(abs(prop.adults - (1-prop.infants)))] # [1] 237.6391
+q8.equalRatesCutoff <- volume.value[which.min(abs(prop.adults - (1-prop.infants)))] # [1] 237.6391
+
+# calculate row number for above cutoff point
+q8.equalRatesCutoffRow <- which(volume.value == q8.equalRatesCutoff)
+# calculate adult and infant proportions
+equalRates.adult <- (1 - prop.adults)[q8.equalRatesCutoffRow]
+equalRates.infant <- (1 - prop.infants)[q8.equalRatesCutoffRow]
+
+# Adult output
+print(paste("Adult harvest proportion of equal errors method:", equalRates.adult))
+# Infant output
+print(paste("Infant harvest proportion of equal errors method:", equalRates.infant))
 
 ```
 
@@ -475,6 +500,24 @@ volume.value[which.min(abs(prop.adults - (1-prop.infants)))] # [1] 237.6391
 (9)(a) Construct an ROC curve by plotting (1 - prop.adults) versus (1 - prop.infants). Each point which appears corresponds to a particular volume.value. Show the location of the cutoffs determined in (7) and (8) on this plot and label each. 
 
 ```{r Part_9}
+# create data frame of points
+q9.pointlist <- list()
+q9.pointlist[[1]] <- data.frame(infants = max.difference.infant, adults = max.difference.adult, 
+                                text = "max difference", volume = volume.value[which.max(smooth.difference)])
+q9.pointlist[[2]] <- data.frame(infants = noA1Infants.infant, adults = noA1Infants.adult, 
+                                text = "zero A1 infants", volume = q8.cutoff)
+q9.pointlist[[3]] <- data.frame(infants = equalRates.infant, adults = equalRates.adult, 
+                                text = "equal errors", volume = q8.equalRatesCutoff)
+q9.points = do.call(rbind, q9.pointlist)
+
+
+# create plot of splits
+ggplot(data = q6.df, aes(y = (1 - prop.adults), x = (1 - prop.infants))) +
+  geom_line(color = "#016450") +
+  geom_point(data = q9.points, aes(x = infants, y = adults)) +
+  geom_abline(slope = 1, linetype = "dashed", color = "#696969") +
+  #annotate("text", x = q7.maxVal + 50, y = 0.5, label = round(q7.maxVal, digits = 2)) +
+  labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume with Smoothed Difference")
 
 
 ```
