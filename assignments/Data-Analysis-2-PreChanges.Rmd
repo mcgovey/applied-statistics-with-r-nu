@@ -345,7 +345,8 @@ ggplot(data = q6.df, aes(x = volume.value)) +
   geom_vline(xintercept = split.infants) +
   geom_hline(yintercept = 0.5) +
   annotate("text", x = 430, y = 0.47, label = round(split.adults, digits = 2)) +
-  annotate("text", x = 180, y = 0.47, label = round(split.infants, digits = 2))
+  annotate("text", x = 180, y = 0.47, label = round(split.infants, digits = 2)) +
+  labs(x = "Volume", y="Proportions", title = "Infant vs. Adult Proportions as a Function of Volume")
 
 
 ```
@@ -364,6 +365,12 @@ This part will address the determination of a volume.value corresponding to the 
 (7)(a) Evaluate a plot of the difference ((1 - prop.adults) - (1 - prop.infants)) versus volume.value. Compare to the 50% "split" points determined in (6)(a). There is considerable variability present in the peak area of this plot. The observed "peak" difference may not be the best representation of the data. One solution is to smooth the data to determine a more representative estimate of the maximum difference.
 
 ```{r Part_7a}
+differences <- ((1 - prop.adults) - (1 - prop.infants))
+
+# create plot of splits
+ggplot(data = q6.df, aes(x = volume.value, y = differences)) +
+  geom_line(color = "#016450") +
+  labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume")
 
 
 ```
@@ -383,6 +390,16 @@ smooth.difference <- predict(y.loess.a) - predict(y.loess.i)
 (7)(c) Present a plot of the difference ((1 - prop.adults) - (1 - prop.infants)) versus volume.value with the variable smooth.difference superimposed. Determine the volume.value corresponding to the maximum smoothed difference (Hint:  use *which.max()*). Show the estimated peak location corresponding to the cutoff determined.
 
 ```{r Part_7c}
+q7.maxVal <- q6.df[which.max(smooth.difference), ]$volume.value
+
+# create plot of splits
+ggplot(data = q6.df, aes(x = volume.value)) +
+  geom_line(aes(y = differences), color = "#016450") +
+  geom_line(aes(y = smooth.difference), color = "#016450") +
+  geom_vline(xintercept = q7.maxVal) +
+  annotate("text", x = q7.maxVal + 50, y = 0.5, label = round(q7.maxVal, digits = 2)) +
+  labs(x = "Volume", y="Difference in Proportions", title = "Difference in Infant and Adult Proportions of Volume")
+
 
 
 ```
@@ -392,8 +409,9 @@ smooth.difference <- predict(y.loess.a) - predict(y.loess.i)
 Code for calculating the adult harvest proportion is provided.
 
 ```{r Part_7d}
-(1 - prop.adults)[which.max(smooth.difference)]  # [1] 0.7416332
-
+# Adult output
+print(paste("Adult harvest proportion:", (1 - prop.adults)[which.max(smooth.difference)])) # [1] 0.7416332
+print(paste("Infant harvest proportion:", (1 - prop.infants)[which.max(smooth.difference)]))
 ```
 
 -----
