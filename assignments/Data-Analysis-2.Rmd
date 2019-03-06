@@ -6,8 +6,6 @@ output:
   html_document: default
 ---
 
-Introduction paragraphs
-
 ```{r setup, include = FALSE}
 # DO NOT ADD OR REVISE CODE HERE
 knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
@@ -30,6 +28,11 @@ library(moments)
 # library(rockchalk) # base R code replaces requirement for this package
 library(car)
 library(broom)
+# color brewer
+library(RColorBrewer)
+
+# add library for table styling
+library(kableExtra)
 
 # 2) Use the "mydata.csv" file from Assignment #1 or use the file posted on the course site.  Reading
 # the files into R will require sep = "" or sep = " " to format data properly.  Use str() to check file
@@ -91,6 +94,15 @@ q1.hist <- ggplot(data = mydata, aes(x = L_RATIO)) +
 
 grid.arrange(q1.qqplot, q1.hist, ncol=2)
 
+# create blue colors, excluding light colors
+cb_blues = brewer.pal(n = 9, "Blues")[5:9]
+
+# create boxplot of log ratio by class
+ggplot(data = mydata, aes(y = L_RATIO, x = CLASS, color=CLASS)) +
+  geom_boxplot() +
+  scale_colour_manual(values = cb_blues) +
+  labs(x = "Class", y = "Log of Ratio", title = "Log of Ratio by Class", color = "Class")
+
 # output skewness and kurtosis
 print(paste("Skewness of ratio of shuck weight to volume", skewness(mydata$L_RATIO)))
 print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(mydata$L_RATIO)))
@@ -107,7 +119,7 @@ bartlett.test(mydata$L_RATIO ~ mydata$CLASS)
 
 **Essay Question: Based on steps 1.a, 1.b and 1.c, which variable RATIO or L_RATIO exhibits better conformance to a normal distribution with homogeneous variances across age classes?  Why?** 
 
-***Answer: (Enter your answer here.)***
+***Answer: The L_RATIO variable is much closer to a normal distribution than RATIO. The L_RATIO variable has skewness much closer to zero and kurtosis much closer to 3, both indicators of a normal distribution. Additionally, the histogram and the QQ-plot both display what appears to be much closer to a standard distribution for the L_RATIO variable. ***
 
 
 ###Section 2 (10 points)
@@ -127,7 +139,7 @@ summary(q2.aov_wo_interaction)
 
 **Essay Question:  Compare the two analyses.  What does the non-significant interaction term suggest about the relationship between L_RATIO and the factors CLASS and SEX?**
 
-***Answer: (Enter your answer here.)***
+***Answer: The non-significance interaction of Class and Sex as it relates to L_Ratio means that the values and effects of Class do not depend on Sex, and vice versa. Further, the pattern in the means of sex do not relate to the pattern in the means of class. ***
 
 (2)(b) For the model without CLASS:SEX (i.e. an interaction term), obtain multiple comparisons with the *TukeyHSD()* function. Interpret the results at the 95% confidence level (*TukeyHSD()* will adjust for unequal sample sizes). 
 
@@ -138,7 +150,7 @@ TukeyHSD(q2.aov_wo_interaction, conf.level = 0.95)
 
 **Additional Essay Question:  first, interpret the trend in coefficients across age classes. What is this indicating about L_RATIO?  Second, do these results suggest male and female abalones can be combined into a single category labeled as 'adults?' If not, why not?**
 
-***Answer: Signif difference in means for log ratio of all classes except A1-A2, reject null that means are the same between classes and accept alternative. For sex, fail to reject the null that there is a significant difference between means of males and females. For difference in means between infants and males, as well as infants and females, reject null and accept alternative.***
+***Answer: There is a significant difference in means for L_Ratio of all classes except A1-A2, so we can reject the null hypotheses of equal means in the difference in all class comparisions (except A1-A2) and accept alternative. For sex, we fail to reject the null that there is a significant difference between the means of males and females. As for the difference in means between infants and males, as well as infants and females, we reject the null hypothesis and accept alternative. This indicates that the interactions between multiple categories of Class and Sex are closely related in terms of how it influences L_Ratio. Finally, due to these results, because of the lack of significance in means of Males and Females, combining the two Sex categories into a single Adult class can be attempted with minimal risk.***
 
 
 ###Section 3 (10 points)
@@ -162,7 +174,7 @@ table(mydata$SEX, mydata$TYPE)
 ```{r Part_3a2}
 
 ggplot(data = mydata, aes(x = VOLUME, fill=TYPE)) +
-  geom_histogram(bins = 25) +
+  geom_histogram(bins = 15) +
   facet_grid(. ~ TYPE) +
   scale_fill_brewer(palette="Set2") +
   labs(x = "Volume", y = "Count", title = "Histogram of Abalone Volume")
@@ -172,7 +184,7 @@ ggplot(data = mydata, aes(x = VOLUME, fill=TYPE)) +
 
 **Essay Question: Compare the histograms.  How do the distributions differ? Are there going to be any difficulties separating infants from adults based on VOLUME?**
 
-***Answer: Infants skewed right with some outliers***
+***Answer: Based on the histograms above, the distribution of infants appears to be skewed right with some outliers. The adult distribution appears to be much closer to a normal distribution. There is significantly more data captured for adults than there is for infants. There will definitely be overlap in infants and adults if volume is the sole field being used to separate the two types. The low values of infants make the smaller values easier to quantify for infants but the values above 100 volume appears to have a significant amount of overlap. ***
 
 (3)(b) Create a scatterplot of SHUCK versus VOLUME and a scatterplot of their base ten logarithms, labeling the variables as L_SHUCK and L_VOLUME. Please be aware the variables, L_SHUCK and L_VOLUME, present the data as orders of magnitude (i.e. VOLUME = 100 = 10^2 becomes L_VOLUME = 2). Use color to differentiate CLASS in the plots. Repeat using color to differentiate by TYPE. 
 
@@ -181,25 +193,37 @@ ggplot(data = mydata, aes(x = VOLUME, fill=TYPE)) +
 mydata$L_SHUCK <- log10(mydata$SHUCK)
 mydata$L_VOLUME <- log10(mydata$VOLUME)
 
-# create a scatterplot of volume, split by rings
-q3.shuckVolScatter <- ggplot(data = mydata, aes(y = SHUCK, x = VOLUME, color=CLASS)) +
+# create a scatterplot of volume, split by class
+q3.shuckVolScatter <- ggplot(data = mydata, aes(y = SHUCK, x = VOLUME, color = CLASS)) +
   geom_point() +
-  scale_color_brewer(palette="Dark2") +
-  labs(x = "Rings", y="Volume (cm^3)", color = "Class")
+  scale_colour_manual(values = cb_blues) +
+  labs(x = "Volume", y = "Shuck Weight (grams)", color = "Class")
 
-# create a scatterplot of whole weight, split by rings
-q3.logShuckVolScatter <- ggplot(data = mydata, aes(y = L_SHUCK, x = L_VOLUME, color=CLASS)) +
+# create a scatterplot of volume and Shuck Weight, split by class
+q3.logShuckVolScatter <- ggplot(data = mydata, aes(y = L_SHUCK, x = L_VOLUME, color = CLASS)) +
   geom_point() +
-  scale_color_brewer(palette="Dark2") +
-  labs(x = "Rings", y="Whole Weight (grams)", color = "Class")
+  scale_colour_manual(values = cb_blues) +
+  labs(x = "Log Volume", y = "Log Shuck Weight (grams)", color = "Class")
 
-grid.arrange(q3.shuckVolScatter, q3.logShuckVolScatter, ncol=2)
+# create a scatterplot of volume and Shuck Weight, split by type
+q3.shuckVolScatterType <- ggplot(data = mydata, aes(y = SHUCK, x = VOLUME, color = TYPE)) +
+  geom_point() +
+  scale_color_brewer(palette="Set2") +
+  labs(x = "Volume", y = "Shuck Weight (grams)", color = "Type")
+
+# create a scatterplot of Volume and Shuck Weight, split by type
+q3.logShuckVolScatterType <- ggplot(data = mydata, aes(y = L_SHUCK, x = L_VOLUME, color = TYPE)) +
+  geom_point() +
+  scale_color_brewer(palette="Set2") +
+  labs(x = "Log Volume", y = "Log Shuck Weight (grams)", color = "Type")
+
+grid.arrange(q3.shuckVolScatter, q3.logShuckVolScatter, q3.shuckVolScatterType, q3.logShuckVolScatterType, ncol=2)
 
 ```
 
 **Additional Essay Question:  Compare the two scatterplots. What effect(s) does log-transformation appear to have on the variability present in the plot?  What are the implications for linear regression analysis? Where do the various CLASS levels appear in the plots? Where do the levels of TYPE appear in the plots?**
 
-***Answer: (Enter your answer here.)***
+***Answer: By applying the log on both sides of the scatterplot, it creates a much tighter band of data. This would very likely increase the Pearson correlation coefficient and make it closer to 1. Additionally the points move from clustered to the lower end of the range of both shuck weight and Volume, to the upper end of the chart for Log of Shuck Weight and Log of Volume. For linear regression, applying these log transformations, should reduce the error in the predictions of the chart. Class seems to be spread throughout the values but generally the lower class (A1, A2) tends to be at the lower end of the scatterplot, and the higher classes A4, A5 at the upper end. For type, in the chart without log transformations, adults and infants appear to overlap. When the volume and shuck weight have had log transformations applied, the infants separate a bit at the lower end, and the adults move to the upper portion of the chart. ***
 
 
 ###Section 4 (5 points)
@@ -229,11 +253,11 @@ summary(q4.linearReg)
 
 **Essay Question:  Interpret the trend in CLASS levelcoefficient estimates? (Hint:  this question is not asking if the estimates are statistically significant. It is asking for an interpretation of the pattern in these coefficients, and how this pattern relates to the earlier displays).**
 
-***Answer: (Enter your answer here.)***
+***Answer: The pattern in coefficients roughly is what we would expect where the upper level of classes provide more predictive power than the lower classes. This roughly aligns with what we've seen with the earlier TukeyHSD test where the difference in means of A1-A2 classes was the only non-signficant difference. Finally, it is worth mentioning that the A2 class is just barely beyond the 0.1 level so depending on the level of alpha, it would still be important in some models. ***
 
 **Additional Essay Question:  Is TYPE an important predictor in this regression? (Hint:  This question is not asking if TYPE is statistically significant, but rather how it compares to the other independent variables in terms of its contribution to predictions of L_SHUCK for harvesting decisions.)  Explain your conclusion.**
 
-***Answer: (Enter your answer here.)***
+***Answer: Type is not quite as predictive as some of the other classes, but it is still more predictive than the A2 Class. With P values close to 0.006 it is still a very predictive indicator, even if it isn't quite to the level of some of the other class variables. Also, the fact that the R-Squared and the Adjusted R-Squared are so close together is an indication that there are not many non-important predictors in the regression model. ***
 
 -----
 
@@ -276,25 +300,25 @@ print(paste("Kurtosis of ratio of shuck weight to volume", kurtosis(q4.linearReg
 # create a scatterplot of residuals vs log of volume, colored by rings
 q5.scatter_class <- ggplot(data = model_data, aes(y = .resid, x = L_VOLUME, color=CLASS)) +
   geom_point() +
-  scale_color_brewer(palette="Dark2") +
+  scale_colour_manual(values = cb_blues) +
   labs(y = "Residuals", x = "Log of Volume", color = "Class")
 
 # create a scatterplot of residuals vs log of volume, colored by type
 q5.scatter_type <- ggplot(data = model_data, aes(y = .resid, x = L_VOLUME, color=TYPE)) +
   geom_point() +
-  scale_color_brewer(palette="Set1") +
+  scale_color_brewer(palette="Set2") +
   labs(y = "Residuals", x = "Log of Volume", color = "Type")
 
 # create a boxplot of residuals, split by class
 q5.boxplot_class <- ggplot(data = model_data, aes(y = .resid, x = CLASS, color=CLASS)) +
   geom_boxplot() +
-  scale_color_brewer(palette="Dark2") +
+  scale_colour_manual(values = cb_blues) +
   labs(x = "Class", y="Residuals", color = "Class")
 
 # create a boxplot of residuals, split by type
 q5.boxplot_type <- ggplot(data = model_data, aes(y = .resid, x = TYPE, color=TYPE)) +
   geom_boxplot() +
-  scale_color_brewer(palette="Set1") +
+  scale_color_brewer(palette="Set2") +
   labs(x = "Type", y="Residuals", color = "Type")
 
 grid.arrange(q5.scatter_class, q5.scatter_type, q5.boxplot_class, q5.boxplot_type, ncol=2)
@@ -306,7 +330,7 @@ bartlett.test(q4.linearReg$residuals ~ mydata$CLASS)
 
 **Essay Question:  What is revealed by the displays and calculations in (5)(a) and (5)(b)? Does the model 'fit'?  Does this analysis indicate that L_VOLUME, and ultimately VOLUME, might be useful for harvesting decisions? Discuss.**  
 
-***Answer: (Enter your answer here.)***
+***Answer: With skewness near 0 and kurtosis near 3 of the residuals, the values appears to be normally distributed, which indicates a good fit. Additionally, in the scatterplot, the values are tightly packed towards the upper end of the log of volume but the residuals are still evenly spread above and below 0. There are limited outliers in both classes and types of residuals and the quartiles seem to be tightly packed. Overall, the model looks to fit the data well and L_Volume should be a good proxy for making decisions on. ***
 
 -----
 
@@ -381,7 +405,7 @@ ggplot(data = q6.df, aes(x = volume.value)) +
 
 **Essay Question:  The two 50% "split" values serve a descriptive purpose illustrating the difference between the populations. What do these values suggest regarding possible cutoffs for harvesting?** 
 
-***Answer: At a much lower cutoff, specifically anything above 133.82, we would harvest more than 50% of the infant population. Whereas, the cutoff point where we would harvest more than 50% of the adult population doesn't occur until the cutoff point exceeds 384.51. ***
+***Answer: These cutoff points highlight the difference in medians of infants and adults. At a much lower cutoff, specifically anything above 133.82, we would harvest more than 50% of the infant population. Whereas, the cutoff point where we would harvest more than 50% of the adult population doesn't occur until the cutoff point exceeds 384.51. ***
 
 -----
 
@@ -506,11 +530,14 @@ print(paste("Infant harvest proportion of equal errors method:", equalRates.infa
 # create data frame of points
 q9.pointlist <- list()
 q9.pointlist[[1]] <- data.frame(infants = max.difference.infant, adults = max.difference.adult, 
-                                text = "max difference", volume = volume.value[which.max(smooth.difference)])
+                                text = "max difference", volume = volume.value[which.max(smooth.difference)],
+                                yield = (max.difference.infant*total.infants + max.difference.adult*total.adults)/(total.adults+total.infants))
 q9.pointlist[[2]] <- data.frame(infants = noA1Infants.infant, adults = noA1Infants.adult, 
-                                text = "zero A1 infants", volume = q8.cutoff)
+                                text = "zero A1 infants", volume = q8.cutoff,
+                                yield = (noA1Infants.infant*total.infants + noA1Infants.adult*total.adults)/(total.adults+total.infants))
 q9.pointlist[[3]] <- data.frame(infants = equalRates.infant, adults = equalRates.adult, 
-                                text = "equal errors", volume = q8.equalRatesCutoff)
+                                text = "equal errors", volume = q8.equalRatesCutoff,
+                                yield = (equalRates.infant*total.infants + equalRates.adult*total.adults)/(total.adults+total.infants))
 q9.points = do.call(rbind, q9.pointlist)
 
 
@@ -540,13 +567,17 @@ print(paste("The Area Under the Curve is", auc(q6.df$prop.infants.harvested, q6.
  	3) harvest proportion of the total population
  	
 ```{r Part_10} 	
-
+# reorder and rename columns
+q10.df <- q9.points[,c(3,4,2,1,5)]
+colnames(q10.df) <- c("Cutoff Point", "Volume", "True Positive", "False Positive", "Proportion Yield")
+# output data frame
+kable(q10.df, format = "html", caption = "Cutoffs Method Summary") %>% kable_styling()
 
 ```
  	
 **Essay Question: Based on the ROC curve, it is evident a wide range of possible "cutoffs" exist. Compare and discuss the three cutoffs determined in this assignment.**   
 
-***Answer: (Enter your answer here.)***
+***Answer: The three cutoff methods all produce cutoff points that occur at different volumes. The first cutoff point uses the location where the difference between the harvested percentages of adults and infants is maximized. The smoothing method allows this to occur closer to the midway point between the maximum not harvested percentages of adults and infants. This cutoff point occurs at the highest volume of the three methods evaluated. The max difference method also results in the lowest false positive rate, however it also results in the lowest true positive rate, leading it to be the most conservative method. The method that finds that point at which there are no more A1 infants results in the highest true positive rate, but also the highest false positive rate. Additionally, the proportion yield is the highest of the three methods. Finally, the cutoff point method that finds the location where the error rates of the adults and infants is equal is a middle of the road cutoff point that ranks second in the true positive rate, the false positive rate, and the proportion yield. Interestingly. Overall, we can see that for the cutoff points evaluated, as the volume of the cutoff point increases, the true positive, false positive, and proportion yields all increase as well (positively correlated).   ***
 
 
 
@@ -556,4 +587,4 @@ print(paste("The Area Under the Curve is", auc(q6.df$prop.infants.harvested, q6.
 2. What qualifications or limitations would you present regarding your analysis?
 3. If it is necessary to proceed based on the current analysis, what suggestions would you have for implementation of a cutoff?  4)  What suggestions would you have for planning future abalone studies of this type? 
 
-***Answer: (Enter your answer here.)***
+***Answer: When presenting these findings, I would start out with a statement on the purpose of the study and the problem that this analysis would be looking to solve. I would outline the overall problems encountered during the first and second data analysis assignments and talk about the assumptions that were made and the manipulations performed on the data to get it to a format where we can drive meaningful results. Because of the number of amount of manipulation that had to be done with taking the log of different values and splitting classes, I would focus on outlining some choices that investigators could make. As we saw as the assignment carried on, there was an opportunity to interpret results in different ways and with the various methods used for determining cutoffs, there were multiple angles to approach a solution. One of the limitations of the data that should be called out again is the discovery of the first data analysis assignment that there was some mixed confounding between classes and sex. Additionally, the fact that the log of volume was used in the predictive model is another area that should be called out. As for suggestions to implement a cutoff, given how easy it would be to overharvest, the investigators should start with a low cutoff and see how well that works for them. As with all things in data science, this is a balancing act and there are trade-offs for one method over another. The investigators will also need to decide if they value higher true positive or lower false negative rates more and decide on a cutoff based on the values specified. For future studies, I would recommend caution from the researchers and to be careful with how they classify abalone when they are measuring things like sex and age. The decisions made early on in the process will heavily influence the later analysis. I would wrap up my presentation with the high level findings from the analysis and present additional appendices that cover the in depth details of the reports. ***
